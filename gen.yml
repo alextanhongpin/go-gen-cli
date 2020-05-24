@@ -1,0 +1,9 @@
+commands:
+  controller:
+    description: Generates a controller
+    template: templates/controller.go
+    path: pkg/controller.go
+  test:
+    description: Describe this action
+    path: Path to destination
+    template: Path to template
