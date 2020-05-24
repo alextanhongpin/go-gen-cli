@@ -1,10 +1,10 @@
 package gen
 
 type Config struct {
-	Commands []*Command `yaml:"commands"`
+	Templates []*Template `yaml:"templates"`
 }
 
-type Command struct {
+type Template struct {
 	Name        string `yaml:"name"`
 	Description string `yaml:"description"`
 	Template    string `yaml:"template"`

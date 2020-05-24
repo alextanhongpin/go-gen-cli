@@ -23,7 +23,7 @@ var initCmd = &cli.Command{
 		defer w.Close()
 
 		var cfg gen.Config
-		cfg.Commands = append(cfg.Commands, &gen.Command{
+		cfg.Templates = append(cfg.Templates, &gen.Template{
 			Name:        "test",
 			Description: "test template",
 			Template:    "templates/test.go",

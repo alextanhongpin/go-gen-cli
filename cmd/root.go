@@ -8,6 +8,14 @@ import (
 	"github.com/urfave/cli"
 )
 
+type Data struct {
+	PackageName string
+	StructName  string
+	StructType  string
+}
+
+var data Data
+
 var cfgPath string
 
 func main() {
@@ -31,7 +39,8 @@ func main() {
 		Flags:   flags,
 		Commands: []*cli.Command{
 			initCmd,
-			templateCmd,
+			addCmd,
+			removeCmd,
 			generateCmd,
 		},
 	}

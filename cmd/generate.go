@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log"
 	"os"
 
 	"github.com/alextanhongpin/go-gen/pkg/gen"
@@ -26,13 +25,11 @@ var generateCmd = &cli.Command{
 			Name:        "struct",
 			Usage:       "Sets the struct name",
 			Destination: &data.StructName,
-			Required:    true,
 		},
 		&cli.StringFlag{
 			Name:        "type",
 			Usage:       "Sets the struct type",
 			Destination: &data.StructType,
-			Required:    true,
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -47,28 +44,26 @@ var generateCmd = &cli.Command{
 			return err
 		}
 
-		command := c.Args().First()
-		var cmd *gen.Command
-		for _, c := range cfg.Commands {
-			if c.Name == command {
-				cmd = c
+		tplArg := c.Args().First()
+		var tpl *gen.Template
+		for _, t := range cfg.Templates {
+			if t.Name == tplArg {
+				tpl = t
 				break
 			}
 		}
-		if cmd == nil {
-			return errors.New("command not found")
+		if tpl == nil {
+			return errors.New("template not found")
 		}
-		log.Println(cmd.Template)
 
-		t, err := gen.Read(cmd.Template)
+		t, err := gen.Read(tpl.Template)
 		if err != nil {
 			return err
 		}
-		log.Println(string(t))
 		if len(string(t)) == 0 {
 			return errors.New("template is empty")
 		}
 
-		return gen.Write(cmd.Path, t, data)
+		return gen.Write(tpl.Path, t, data)
 	},
 }
