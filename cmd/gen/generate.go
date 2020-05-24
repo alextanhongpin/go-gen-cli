@@ -30,7 +30,7 @@ var generateCmd = &cli.Command{
 		},
 		&cli.StringFlag{
 			Name:        "tag",
-			Usage:       "Sets a tag for the application",
+			Usage:       "Sets a tag",
 			Destination: &data.Tag,
 		},
 	},

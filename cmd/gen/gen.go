@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"sort"
@@ -25,8 +26,8 @@ var cfgPath string
 func main() {
 	flags := []cli.Flag{
 		&cli.StringFlag{
-			Name:        "config",
-			Aliases:     []string{"c"},
+			Name:        "file",
+			Aliases:     []string{"f"},
 			Value:       "gen.yaml",
 			Usage:       "Load configuration from file",
 			Destination: &cfgPath,
@@ -46,6 +47,10 @@ func main() {
 			addCmd,
 			removeCmd,
 			generateCmd,
+		},
+		OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
+			fmt.Fprintf(c.App.Writer, "for shame\n")
+			return err
 		},
 	}
 

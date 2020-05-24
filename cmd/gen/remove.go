@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"errors"
+	"html/template"
 	"os"
 
 	"github.com/alextanhongpin/go-gen/pkg/gen"
@@ -14,6 +16,23 @@ var removeCmd = &cli.Command{
 	Name:    "remove",
 	Aliases: []string{"rm"},
 	Usage:   "removes a template and the generated files and configuration",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:        "pkg",
+			Usage:       "Sets the package name",
+			Destination: &data.PackageName,
+		},
+		&cli.StringFlag{
+			Name:        "struct",
+			Usage:       "Sets the struct name",
+			Destination: &data.StructName,
+		},
+		&cli.StringFlag{
+			Name:        "tag",
+			Usage:       "Sets a tag",
+			Destination: &data.Tag,
+		},
+	},
 	Action: func(c *cli.Context) error {
 		f, err := gen.Open(cfgPath, os.O_RDWR)
 		if err != nil {
@@ -54,10 +73,27 @@ var removeCmd = &cli.Command{
 		if err := yaml.NewEncoder(f).Encode(&cfg); err != nil {
 			return err
 		}
-		if err := os.Remove(tpl.Template); err != nil {
+
+		if len(tpl.Actions) > 0 {
+			for _, act := range tpl.Actions {
+				// Format template and path name.
+				var src, dst bytes.Buffer
+				srctpl := template.Must(template.New("src").Parse(act.Template))
+				_ = srctpl.Execute(&src, data)
+				dsttpl := template.Must(template.New("dst").Parse(act.Path))
+				_ = dsttpl.Execute(&dst, data)
+				if err := os.Remove(src.String()); !errors.Is(err, os.ErrNotExist) {
+					return err
+				}
+				if err := os.Remove(dst.String()); !errors.Is(err, os.ErrNotExist) {
+					return err
+				}
+			}
+		}
+		if err := os.Remove(tpl.Template); !errors.Is(err, os.ErrNotExist) {
 			return err
 		}
-		if err := os.Remove(tpl.Path); err != nil {
+		if err := os.Remove(tpl.Path); !errors.Is(err, os.ErrNotExist) {
 			return err
 		}
 		return nil
