@@ -5,13 +5,17 @@ import (
 	"os"
 	"sort"
 
+	"github.com/alextanhongpin/go-gen/pkg/gen"
+
 	"github.com/urfave/cli"
 )
 
 type Data struct {
 	PackageName string
 	StructName  string
-	StructType  string
+	Tag         string
+	Template    *gen.Template
+	Prompts     map[string]interface{}
 }
 
 var data Data
