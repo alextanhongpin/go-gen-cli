@@ -9,6 +9,7 @@ import (
 
 	"github.com/alextanhongpin/go-gen/pkg/gen"
 
+	"github.com/Masterminds/sprig"
 	"github.com/urfave/cli"
 	"gopkg.in/yaml.v2"
 )
@@ -71,10 +72,10 @@ var generateCmd = &cli.Command{
 			for _, act := range tpl.Actions {
 				// Format template and path name.
 				var src, dst bytes.Buffer
-				srctpl := template.Must(template.New("src").Parse(act.Template))
+				srctpl := template.Must(template.New("src").Funcs(sprig.FuncMap()).Parse(act.Template))
 				_ = srctpl.Execute(&src, data)
 
-				dsttpl := template.Must(template.New("dst").Parse(act.Path))
+				dsttpl := template.Must(template.New("dst").Funcs(sprig.FuncMap()).Parse(act.Path))
 				_ = dsttpl.Execute(&dst, data)
 
 				t, err := gen.Read(src.String())
