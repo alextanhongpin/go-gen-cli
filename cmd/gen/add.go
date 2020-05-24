@@ -67,6 +67,7 @@ var addCmd = &cli.Command{
 			if _, err := f.Seek(0, 0); err != nil {
 				return err
 			}
+
 			if err := yaml.NewEncoder(f).Encode(&cfg); err != nil {
 				return err
 			}

@@ -64,7 +64,7 @@ var initCmd = &cli.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Write %d bytes", n)
+		fmt.Printf("Wrote config to %s (%d bytes)", cfgPath, n)
 		return nil
 	},
 }

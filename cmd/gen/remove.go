@@ -49,6 +49,7 @@ var removeCmd = &cli.Command{
 		if len(tplArg) == 0 {
 			return errors.New("template name cannot be empty")
 		}
+
 		var tpl *gen.Template
 		var i int
 		for j, t := range cfg.Templates {
@@ -80,8 +81,10 @@ var removeCmd = &cli.Command{
 				var src, dst bytes.Buffer
 				srctpl := template.Must(template.New("src").Parse(act.Template))
 				_ = srctpl.Execute(&src, data)
+
 				dsttpl := template.Must(template.New("dst").Parse(act.Path))
 				_ = dsttpl.Execute(&dst, data)
+
 				if err := os.Remove(src.String()); !errors.Is(err, os.ErrNotExist) {
 					return err
 				}

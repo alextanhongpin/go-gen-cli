@@ -47,6 +47,7 @@ func main() {
 			addCmd,
 			removeCmd,
 			generateCmd,
+			lsCmd,
 		},
 		OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
 			fmt.Fprintf(c.App.Writer, "for shame\n")
