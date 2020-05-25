@@ -23,7 +23,7 @@ type Action struct {
 func NewAction(name string) *Action {
 	return &Action{
 		Description: fmt.Sprintf("creates a %s", name),
-		Template:    fmt.Sprintf("%s/%s.go", TEMPLATE_PATH, name),
+		Template:    fmt.Sprintf("%s/%s.tmpl", TEMPLATE_PATH, name),
 		Path:        fmt.Sprintf("%s/%s.go", PKG_PATH, name),
 	}
 }
@@ -33,11 +33,11 @@ func (a *Action) TouchTemplate() error {
 }
 
 func (a *Action) RemoveTemplate() error {
-	return RemoveIfExists(a.Template)
+	return Remove(a.Template)
 }
 
 func (a *Action) RemoveGeneratedFile() error {
-	return RemoveIfExists(a.Path)
+	return Remove(a.Path)
 }
 
 // Generate reads from the template and write to the destination.

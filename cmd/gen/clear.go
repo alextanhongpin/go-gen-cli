@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/alextanhongpin/go-gen/pkg/gen"
 
 	"github.com/urfave/cli"
@@ -24,11 +22,10 @@ var clearCmd = &cli.Command{
 		var errors Errors
 		for _, act := range tpl.Actions {
 			if err := act.RemoveGeneratedFile(); err != nil {
-
 				errors = append(errors, err)
 				continue
 			}
-			NewInfo(fmt.Sprintf("info: remove generated template %s", act.Path))
+			gen.Info("%s: file removed", act.Path)
 		}
 
 		return errors

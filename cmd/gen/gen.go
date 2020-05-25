@@ -1,30 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"sort"
 
 	"github.com/alextanhongpin/go-gen/pkg/gen"
-
 	"github.com/urfave/cli"
 )
 
 type Data struct {
 	Prompt map[string]interface{}
 	Env    map[string]interface{}
-}
-
-func NewWarning(msg string) {
-	fmt.Println(gen.Warning(msg))
-}
-
-func NewInfo(msg string) {
-	fmt.Println(gen.Info(msg))
-}
-
-func NewSuccess(msg string) {
-	fmt.Println(gen.Success(msg))
 }
 
 func main() {
@@ -59,7 +45,7 @@ func main() {
 	sort.Sort(cli.CommandsByName(app.Commands))
 
 	if err := app.Run(os.Args); err != nil {
-		NewWarning(err.Error())
+		gen.Error(err.Error())
 		os.Exit(1)
 	}
 }

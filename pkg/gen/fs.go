@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	OVERWRITE = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
-	WRITE_NEW = os.O_WRONLY | os.O_CREATE | os.O_EXCL
-	READ_NEW  = os.O_RDONLY | os.O_CREATE | os.O_EXCL
+	OVERWRITE_FLAG = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
+	WRITE_NEW_FLAG = os.O_WRONLY | os.O_CREATE | os.O_EXCL
+	READ_NEW_FLAG  = os.O_RDONLY | os.O_CREATE | os.O_EXCL
 )
 
 // Open opens the given file with the provided flag, and
@@ -34,10 +34,12 @@ func Open(name string, flag int) (*os.File, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	file, err := os.OpenFile(filepath, flag, 0644)
 	if err != nil {
 		return nil, err
 	}
+
 	return file, nil
 }
 
@@ -53,7 +55,7 @@ func Resolve(name string) (string, error) {
 // Touch creates a file and its directories if not exists, and err when
 // exists.
 func Touch(name string) error {
-	f, err := Open(name, READ_NEW)
+	f, err := Open(name, READ_NEW_FLAG)
 	if err != nil {
 		return err
 	}
@@ -86,11 +88,11 @@ func Write(name string, tpl []byte, data interface{}) error {
 	t := template.Must(template.New("").Funcs(sprig.FuncMap()).Parse(string(tpl)))
 
 	// Open as write-only, create if not exists.
-	w, err := Open(name, WRITE_NEW)
+	f, err := Open(name, WRITE_NEW_FLAG)
 	if err != nil {
 		return err
 	}
-	defer w.Close()
+	defer f.Close()
 
 	// Write to a temporary buffer.
 	var bb bytes.Buffer
@@ -110,11 +112,8 @@ func Write(name string, tpl []byte, data interface{}) error {
 		b = bb.Bytes()
 	}
 
-	_, err = w.Write(b)
-	if err != nil {
-		return err
-	}
-	return nil
+	_, err = f.Write(b)
+	return err
 }
 
 func IsGoFile(name string) bool {
@@ -122,16 +121,17 @@ func IsGoFile(name string) bool {
 }
 
 func Overwrite(name string, content []byte) error {
-	f, err := Open(name, OVERWRITE)
+	f, err := Open(name, OVERWRITE_FLAG)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
+
 	_, err = f.Write(content)
 	return err
 }
 
-func RemoveIfExists(name string) error {
+func Remove(name string) error {
 	path, err := Resolve(name)
 	if err != nil {
 		return err

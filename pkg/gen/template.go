@@ -19,13 +19,10 @@ func NewTemplate(name string) *Template {
 			NewAction(name),
 			NewAction(fmt.Sprintf("%s_test", name)),
 		},
-		Environment: make(map[string]interface{}),
+		Environment: map[string]interface{}{
+			"PKG": "$PKG",
+		},
 	}
-}
-
-type ActionResult struct {
-	Error  error
-	Action *Action
 }
 
 func (t *Template) ValidateEnvironment() []error {

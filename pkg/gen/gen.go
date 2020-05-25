@@ -12,11 +12,7 @@ type Gen struct {
 }
 
 func New() *Gen {
-	return &Gen{
-		cfg: &Config{
-			Templates: make([]*Template, 0),
-		},
-	}
+	return &Gen{cfg: NewConfig()}
 }
 
 func (c *Gen) Read(path string) error {

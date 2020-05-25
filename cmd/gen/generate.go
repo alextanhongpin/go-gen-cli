@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/alextanhongpin/go-gen/pkg/gen"
 
@@ -25,7 +24,7 @@ var generateCmd = &cli.Command{
 		name := c.Args().First()
 		tpl := g.FindTemplate(name)
 		if tpl == nil {
-			return fmt.Errorf("error: template %q not found. templates available: %s", name, strings.Join(g.ListTemplates(), ", "))
+			return fmt.Errorf("%s: not found", name)
 		}
 
 		// Prompt user for additional information.
@@ -48,18 +47,18 @@ var generateCmd = &cli.Command{
 		for _, act := range tpl.Actions {
 			err := act.Exec(data)
 			if errors.Is(err, os.ErrExist) {
-				NewWarning(fmt.Sprintf("error: file exists at %s", act.Path))
+				gen.Error("%s: file exists", act.Path)
 				continue
 			}
 			if errors.Is(err, gen.ErrEmpty) {
-				NewWarning(fmt.Sprintf("error: file is empty %s", act.Template))
+				gen.Error("%s: file is empty", act.Template)
 				continue
 			}
 			if err != nil {
 				errs = append(errs, err)
 				continue
 			}
-			NewSuccess(fmt.Sprintf("success: wrote to %s", act.Path))
+			gen.Info("%s: file created", act.Path)
 		}
 		return errs
 	},
