@@ -8,7 +8,6 @@ import (
 	"github.com/alextanhongpin/go-gen/pkg/gen"
 
 	"github.com/urfave/cli"
-	"gopkg.in/yaml.v2"
 )
 
 var addCmd = &cli.Command{

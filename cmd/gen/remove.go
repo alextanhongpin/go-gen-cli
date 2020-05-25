@@ -14,21 +14,13 @@ var removeCmd = &cli.Command{
 	Aliases: []string{"rm"},
 	Usage:   "removes a registered template and all the generated files",
 	Action: func(c *cli.Context) error {
-		cfgPath := c.String("file")
-		b, err := gen.Read(cfgPath)
+		cfg, err := gen.NewConfig(c.String("file"))
 		if err != nil {
-			return err
-		}
-		b = []byte(os.ExpandEnv(string(b)))
-
-		var cfg gen.Config
-		if err := yaml.Unmarshal(b, &cfg); err != nil {
 			return err
 		}
 
 		name := c.Args().First()
 		tpl := cfg.Find(name)
-
 		for _, act := range tpl.Actions {
 			// Format template and path name.
 			if err := gen.RemoveIfExists(act.Template); err != nil {

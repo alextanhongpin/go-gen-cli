@@ -1,9 +1,28 @@
 package gen
 
-import "sort"
+import (
+	"os"
+	"sort"
+
+	"gopkg.in/yaml.v2"
+)
 
 type Config struct {
 	Templates []*Template `yaml:"templates"`
+}
+
+func NewConfig(name string) (*Config, error) {
+	b, err := Read(name)
+	if err != nil {
+		return nil, err
+	}
+	b = []byte(os.ExpandEnv(string(b)))
+
+	var cfg Config
+	if err := yaml.Unmarshal(b, &cfg); err != nil {
+		return nil, err
+	}
+	return &cfg, nil
 }
 
 func (c *Config) Find(name string) *Template {

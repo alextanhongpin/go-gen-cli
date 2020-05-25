@@ -2,12 +2,10 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/alextanhongpin/go-gen/pkg/gen"
 
 	"github.com/urfave/cli"
-	"gopkg.in/yaml.v2"
 )
 
 var clearCmd = &cli.Command{
@@ -15,14 +13,8 @@ var clearCmd = &cli.Command{
 	Aliases: []string{"c"},
 	Usage:   "clears the generated files for a given template",
 	Action: func(c *cli.Context) error {
-		b, err := gen.Read(c.String("file"))
+		cfg, err := gen.NewConfig(c.String("file"))
 		if err != nil {
-			return err
-		}
-		b = []byte(os.ExpandEnv(string(b)))
-
-		var cfg gen.Config
-		if err := yaml.Unmarshal(b, &cfg); err != nil {
 			return err
 		}
 

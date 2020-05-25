@@ -1,14 +1,11 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"os"
 
 	"github.com/alextanhongpin/go-gen/pkg/gen"
 
 	"github.com/urfave/cli"
-	"gopkg.in/yaml.v2"
 )
 
 var initCmd = &cli.Command{
