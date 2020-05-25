@@ -15,7 +15,7 @@ var clearCmd = &cli.Command{
 	Aliases: []string{"c"},
 	Usage:   "clears the generated files for a given template",
 	Action: func(c *cli.Context) error {
-		b, err := gen.Read(cfgPath)
+		b, err := gen.Read(c.String("file"))
 		if err != nil {
 			return err
 		}

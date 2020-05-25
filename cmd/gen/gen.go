@@ -15,10 +15,6 @@ type Data struct {
 	Env    map[string]interface{}
 }
 
-var data Data
-
-var cfgPath string
-
 func NewWarning(msg string) {
 	fmt.Println(gen.Warning(msg))
 }
@@ -34,11 +30,10 @@ func NewSuccess(msg string) {
 func main() {
 	flags := []cli.Flag{
 		&cli.StringFlag{
-			Name:        "file",
-			Aliases:     []string{"f"},
-			Value:       "gen.yaml",
-			Usage:       "Load configuration from file",
-			Destination: &cfgPath,
+			Name:    "file",
+			Aliases: []string{"f"},
+			Value:   "gen.yaml",
+			Usage:   "Load configuration from file",
 		},
 	}
 

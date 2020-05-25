@@ -16,10 +16,10 @@ var addCmd = &cli.Command{
 	Aliases: []string{"a"},
 	Usage:   "adds a new template",
 	Action: func(c *cli.Context) error {
-		b, err := gen.Read(cfgPath)
+		b, err := gen.Read(c.String("file"))
 		if err != nil {
 			if errors.Is(err, os.ErrNotExist) {
-				return fmt.Errorf("error: %s is missing from the path", cfgPath)
+				return fmt.Errorf("error: %s is missing from the path", c.String("file"))
 			}
 			return err
 		}
@@ -45,7 +45,7 @@ var addCmd = &cli.Command{
 			if err != nil {
 				return err
 			}
-			if err := gen.Overwrite(cfgPath, b); err != nil {
+			if err := gen.Overwrite(c.String("file"), b); err != nil {
 				return err
 			}
 		}

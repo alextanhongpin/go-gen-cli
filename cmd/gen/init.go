@@ -33,6 +33,7 @@ var initCmd = &cli.Command{
 		if err != nil {
 			return err
 		}
+		cfgPath := c.String("file")
 		f, err := gen.Open(cfgPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL)
 		if err != nil {
 			if errors.Is(err, os.ErrExist) {

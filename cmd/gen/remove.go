@@ -14,6 +14,7 @@ var removeCmd = &cli.Command{
 	Aliases: []string{"rm"},
 	Usage:   "removes a registered template and all the generated files",
 	Action: func(c *cli.Context) error {
+		cfgPath := c.String("file")
 		b, err := gen.Read(cfgPath)
 		if err != nil {
 			return err

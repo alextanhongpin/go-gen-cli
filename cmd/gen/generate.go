@@ -17,7 +17,7 @@ var generateCmd = &cli.Command{
 	Aliases: []string{"g"},
 	Usage:   "generates the given template",
 	Action: func(c *cli.Context) error {
-		b, err := gen.Read(cfgPath)
+		b, err := gen.Read(c.String("file"))
 		if err != nil {
 			return err
 		}
@@ -39,8 +39,10 @@ var generateCmd = &cli.Command{
 		if err != nil {
 			return err
 		}
-		data.Prompt = prompt
-		data.Env = tpl.Environment
+		data := Data{
+			Prompt: prompt,
+			Env:    tpl.Environment,
+		}
 
 		for key, value := range tpl.Environment {
 			if gen.IsZero(value) {

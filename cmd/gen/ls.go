@@ -14,7 +14,7 @@ var lsCmd = &cli.Command{
 	Aliases: []string{"ls"},
 	Usage:   "lists the existing templates",
 	Action: func(c *cli.Context) error {
-		b, err := gen.Read(cfgPath)
+		b, err := gen.Read(c.String("file"))
 		if err != nil {
 			return err
 		}
