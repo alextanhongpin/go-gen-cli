@@ -74,11 +74,11 @@ func Read(name string) ([]byte, error) {
 
 // Write writes the template with the data to a given file, and creates the
 // file if it does not exists.
-func Write(out string, tpl []byte, data interface{}) error {
+func Write(name string, tpl []byte, data interface{}) error {
 	t := template.Must(template.New("").Parse(string(tpl)))
 
 	// Open as write-only, create if not exists.
-	w, err := Open(out, os.O_WRONLY|os.O_CREATE|os.O_EXCL)
+	w, err := Open(name, os.O_WRONLY|os.O_CREATE|os.O_EXCL)
 	if err != nil {
 		return err
 	}
