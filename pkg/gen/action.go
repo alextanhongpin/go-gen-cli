@@ -11,7 +11,7 @@ type Action struct {
 func NewAction(name string) *Action {
 	return &Action{
 		Description: fmt.Sprintf("creates a %s", name),
-		Template:    fmt.Sprintf("templates/%s.go"),
-		Path:        fmt.Sprintf("pkg/%s.go"),
+		Template:    fmt.Sprintf("templates/%s.go", name),
+		Path:        fmt.Sprintf("pkg/%s.go", name),
 	}
 }
