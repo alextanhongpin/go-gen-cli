@@ -17,40 +17,27 @@ var addCmd = &cli.Command{
 	Aliases: []string{"a"},
 	Usage:   "adds a new template",
 	Action: func(c *cli.Context) error {
+		// Open config file.
 		f, err := gen.Open(cfgPath, os.O_RDWR)
 		if err != nil {
 			return err
 		}
 		defer f.Close()
 
+		// Load as YAML.
 		var cfg gen.Config
 		if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
 			return err
 		}
 
-		tplArg := c.Args().First()
-		if len(tplArg) == 0 {
-			return errors.New("template name cannot be empty")
-		}
-		var tpl *gen.Template
-		for _, t := range cfg.Templates {
-			if t.Name == tplArg {
-				tpl = t
-				break
-			}
-		}
+		name := c.Args().First()
+		tpl := cfg.Templates.Find(name)
 		if tpl == nil {
 			tpl = &gen.Template{
-				Name:        tplArg,
-				Description: fmt.Sprintf("%s template", tplArg),
+				Name:        name,
+				Description: fmt.Sprintf("%s template", name),
 			}
-			tpl.Actions = []*gen.Action{
-				{
-					Description: fmt.Sprintf("%s template", tplArg),
-					Template:    fmt.Sprintf("templates/%s.go", tplArg),
-					Path:        fmt.Sprintf("pkg/%s.go", tplArg),
-				},
-			}
+			tpl.Actions = []*gen.Action{gen.NewAction(name)}
 			cfg.Templates = append(cfg.Templates, tpl)
 
 			if err := f.Truncate(0); err != nil {
@@ -66,14 +53,13 @@ var addCmd = &cli.Command{
 		}
 
 		for _, act := range tpl.Actions {
-			r, err := gen.Open(act.Template, os.O_RDONLY|os.O_CREATE|os.O_EXCL)
-			defer r.Close()
-			if errors.Is(err, os.ErrExist) {
-				log.Printf("file exists: %s\n", act.Template)
-				continue
-			}
-			if err != nil {
-				return err
+			if err := gen.Create(act.Template); err != nil {
+				if errors.Is(err, os.ErrExist) {
+					log.Printf("file exists: %s\n", act.Template)
+					continue
+				} else {
+					return err
+				}
 			}
 			log.Printf("created file %s\n", act.Template)
 		}
