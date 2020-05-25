@@ -15,51 +15,40 @@ var addCmd = &cli.Command{
 	Aliases: []string{"a"},
 	Usage:   "adds a new template",
 	Action: func(c *cli.Context) error {
-		b, err := gen.Read(c.String("file"))
-		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				return fmt.Errorf("error: %s is missing from the path", c.String("file"))
-			}
-			return err
+		cfg, err := gen.NewConfig(c.String("file"))
+		if errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("error: %s is missing from the path", c.String("file"))
 		}
-		b = []byte(os.ExpandEnv(string(b)))
-
-		// Load as YAML.
-		var cfg gen.Config
-		if err := yaml.Unmarshal(b, &cfg); err != nil {
+		if err != nil {
 			return err
 		}
 
 		name := c.Args().First()
 		tpl := cfg.Find(name)
 		if tpl == nil {
-			tpl = &gen.Template{
-				Name:        name,
-				Description: fmt.Sprintf("%s template", name),
-			}
-			tpl.Actions = []*gen.Action{gen.NewAction(name)}
+			tpl := gen.NewTemplate(name)
+			tpl.Actions = append(tpl.Actions, gen.NewAction(name))
 			cfg.Add(tpl)
 
-			b, err := yaml.Marshal(&cfg)
-			if err != nil {
-				return err
-			}
-			if err := gen.Overwrite(c.String("file"), b); err != nil {
+			if err := gen.OverwriteConfig(cfg); err != nil {
 				return err
 			}
 		}
 
-		for _, act := range tpl.Actions {
-			if err := gen.Create(act.Template); err != nil {
-				if errors.Is(err, os.ErrExist) {
-					NewWarning(fmt.Sprintf("error: file already exists at %s", act.Template))
-					continue
-				} else {
-					return err
-				}
+		var errors []error
+		for res := range gen.GenerateTemplates(tpl) {
+			err, act := res.Error, res.Action
+			if errors.Is(err, os.ErrExist) {
+				NewWarning(fmt.Sprintf("error: file already exists at %s", act.Template))
+				continue
+			}
+			if err != nil {
+				errors = append(errors, err)
+				continue
 			}
 			NewSuccess(fmt.Sprintf("success: created file %s", act.Template))
 		}
-		return nil
+
+		return cli.NewMultiError(errors...)
 	},
 }

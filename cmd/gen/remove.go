@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-
 	"github.com/alextanhongpin/go-gen/pkg/gen"
 
 	"github.com/urfave/cli"

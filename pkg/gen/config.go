@@ -70,3 +70,18 @@ func (c *Config) ListTemplates() []string {
 	}
 	return result
 }
+
+func (c *Config) WriteConfigIfNotExists(name string) error {
+	f, err := Open(name, os.O_WRONLY|os.O_CREATE|os.O_EXCL)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	b, err := yaml.Marshal(c)
+	if err != nil {
+		return err
+	}
+
+	return f.Write(b)
+}

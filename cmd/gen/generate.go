@@ -32,15 +32,15 @@ var generateCmd = &cli.Command{
 		if err != nil {
 			return err
 		}
+
 		data := Data{
 			Prompt: prompt,
 			Env:    tpl.Environment,
 		}
 
-		for key, value := range tpl.Environment {
-			if gen.IsZero(value) {
-				return fmt.Errorf("ENV %s is specified, but the value is empty", key)
-			}
+		errs := tpl.ValidateEnvironment()
+		if len(errs) > 0 {
+			return cli.NewMultiError(errs...)
 		}
 
 		for _, act := range tpl.Actions {
