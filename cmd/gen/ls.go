@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/alextanhongpin/go-gen/pkg/gen"
 
@@ -15,14 +14,13 @@ var lsCmd = &cli.Command{
 	Aliases: []string{"ls"},
 	Usage:   "lists the existing templates",
 	Action: func(c *cli.Context) error {
-		f, err := gen.Open(cfgPath, os.O_RDONLY)
+		b, err := gen.Read(cfgPath)
 		if err != nil {
 			return err
 		}
-		defer f.Close()
 
 		var cfg gen.Config
-		if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
+		if err := yaml.Unmarshal(b, &cfg); err != nil {
 			return err
 		}
 
