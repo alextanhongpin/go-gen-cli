@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"sort"
@@ -22,6 +21,10 @@ type Data struct {
 var data Data
 
 var cfgPath string
+
+func NewError(msg string) error {
+	return cli.NewExitError(gen.Warning(msg), 1)
+}
 
 func main() {
 	flags := []cli.Flag{
@@ -48,10 +51,6 @@ func main() {
 			removeCmd,
 			generateCmd,
 			lsCmd,
-		},
-		OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
-			fmt.Fprintf(c.App.Writer, "for shame\n")
-			return err
 		},
 	}
 

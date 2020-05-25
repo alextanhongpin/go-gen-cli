@@ -19,6 +19,9 @@ var addCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		b, err := gen.Read(cfgPath)
 		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				return NewError("gen.yaml is missing from the path")
+			}
 			return err
 		}
 		b = []byte(os.ExpandEnv(string(b)))

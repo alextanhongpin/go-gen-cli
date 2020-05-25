@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"os"
 
 	"github.com/alextanhongpin/go-gen/pkg/gen"
 
@@ -17,7 +19,7 @@ var initCmd = &cli.Command{
 		cfg := gen.Config{
 			Templates: []*gen.Template{
 				{
-					Name:        "hello ",
+					Name:        "hello",
 					Description: "hello template",
 					Actions: []*gen.Action{
 						gen.NewAction("hello"),
@@ -27,14 +29,22 @@ var initCmd = &cli.Command{
 			},
 		}
 
-		d, err := yaml.Marshal(&cfg)
+		b, err := yaml.Marshal(&cfg)
 		if err != nil {
 			return err
 		}
-		if err := gen.Write(cfgPath, d, nil); err != nil {
+		f, err := gen.Open(cfgPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL)
+		if err != nil {
+			if errors.Is(err, os.ErrExist) {
+				return NewError("gen.yaml already exists")
+			}
 			return err
 		}
-		fmt.Printf("Wrote config to %s", cfgPath)
+		defer f.Close()
+		if _, err := f.Write(b); err != nil {
+			return err
+		}
+		fmt.Println(gen.Success(fmt.Sprintf("%s written", cfgPath)))
 		return nil
 	},
 }
