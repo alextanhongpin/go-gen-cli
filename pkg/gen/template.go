@@ -15,7 +15,10 @@ func NewTemplate(name string) *Template {
 		Name:        name,
 		Description: fmt.Sprintf("%s template", name),
 		Prompts:     make([]*Prompt, 0),
-		Actions:     make([]*Action, 0),
+		Actions: []*Action{
+			NewAction(name),
+			NewAction(fmt.Sprintf("%s_test", name)),
+		},
 		Environment: make(map[string]interface{}),
 	}
 }
@@ -23,30 +26,6 @@ func NewTemplate(name string) *Template {
 type ActionResult struct {
 	Error  error
 	Action *Action
-}
-
-func GenerateTemplates(tpl *Template) []ActionResult {
-	var result []ActionResult
-	for _, act := range tpl.Actions {
-		err := Create(act.Template)
-		result = append(result, ActionResult{
-			Error:  err,
-			Action: act,
-		})
-	}
-	return result
-}
-
-func ClearTemplates(tpl *Template) []ActionResult {
-	var result []ActionResult
-	for _, act := range tpl.Actions {
-		err := RemoveIfExists(act.Path)
-		result = append(result, ActionResult{
-			Error:  err,
-			Action: act,
-		})
-	}
-	return result
 }
 
 func (t *Template) ValidateEnvironment() []error {

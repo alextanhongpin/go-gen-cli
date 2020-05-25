@@ -3,11 +3,19 @@ package gen
 import (
 	"bytes"
 	"errors"
+	"html/template"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
-	"text/template"
+
+	"github.com/Masterminds/sprig"
+)
+
+const (
+	OVERWRITE = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
+	WRITE_NEW = os.O_WRONLY | os.O_CREATE | os.O_EXCL
+	READ_NEW  = os.O_RDONLY | os.O_CREATE | os.O_EXCL
 )
 
 // Open opens the given file with the provided flag, and
@@ -42,10 +50,10 @@ func Resolve(name string) (string, error) {
 	return path, nil
 }
 
-// Create creates a file and its directories if not exists, and err when
+// Touch creates a file and its directories if not exists, and err when
 // exists.
-func Create(name string) error {
-	f, err := Open(name, os.O_RDONLY|os.O_CREATE|os.O_EXCL)
+func Touch(name string) error {
+	f, err := Open(name, READ_NEW)
 	if err != nil {
 		return err
 	}
@@ -75,36 +83,46 @@ func Read(name string) ([]byte, error) {
 // Write writes the template with the data to a given file, and creates the
 // file if it does not exists.
 func Write(name string, tpl []byte, data interface{}) error {
-	t := template.Must(template.New("").Parse(string(tpl)))
+	t := template.Must(template.New("").Funcs(sprig.FuncMap()).Parse(string(tpl)))
 
 	// Open as write-only, create if not exists.
-	w, err := Open(name, os.O_WRONLY|os.O_CREATE|os.O_EXCL)
+	w, err := Open(name, WRITE_NEW)
 	if err != nil {
 		return err
 	}
 	defer w.Close()
 
 	// Write to a temporary buffer.
-	var b bytes.Buffer
-	if err := t.Execute(&b, data); err != nil {
+	var bb bytes.Buffer
+	if err := t.Execute(&bb, data); err != nil {
 		return err
 	}
 
-	// Formats the go-code before writing.
-	b2, err := FormatSource(b.Bytes())
-	if err != nil {
-		return err
+	var b []byte
+	// Only format if it's go source.
+	if IsGoFile(name) {
+		// Formats the go-code before writing.
+		b, err = FormatSource(bb.Bytes())
+		if err != nil {
+			return err
+		}
+	} else {
+		b = bb.Bytes()
 	}
 
-	_, err = w.Write(b2)
+	_, err = w.Write(b)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
+func IsGoFile(name string) bool {
+	return path.Ext(name) == ".go"
+}
+
 func Overwrite(name string, content []byte) error {
-	f, err := Open(name, os.O_WRONLY|os.O_TRUNC)
+	f, err := Open(name, OVERWRITE)
 	if err != nil {
 		return err
 	}

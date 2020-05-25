@@ -13,21 +13,24 @@ var clearCmd = &cli.Command{
 	Aliases: []string{"c"},
 	Usage:   "clears the generated files for a given template",
 	Action: func(c *cli.Context) error {
-		cfg, err := gen.NewConfig(c.String("file"))
-		if err != nil {
+		g := gen.New()
+		if err := g.Read(c.String("file")); err != nil {
 			return err
 		}
 
 		name := c.Args().First()
-		tpl := cfg.Find(name)
+		tpl := g.FindTemplate(name)
 
+		var errors Errors
 		for _, act := range tpl.Actions {
-			if err := gen.RemoveIfExists(act.Path); err != nil {
-				return err
+			if err := act.RemoveGeneratedFile(); err != nil {
+
+				errors = append(errors, err)
+				continue
 			}
 			NewInfo(fmt.Sprintf("info: remove generated template %s", act.Path))
 		}
 
-		return nil
+		return errors
 	},
 }

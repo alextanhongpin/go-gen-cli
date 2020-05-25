@@ -13,13 +13,14 @@ var lsCmd = &cli.Command{
 	Aliases: []string{"ls"},
 	Usage:   "lists the existing templates",
 	Action: func(c *cli.Context) error {
-		cfg, err := gen.NewConfig(c.String("file"))
+		g := gen.New()
+		err := g.Read(c.String("file"))
 		if err != nil {
 			return err
 		}
 
-		for _, t := range cfg.Templates {
-			fmt.Printf("%s: %s\n", t.Name, t.Description)
+		for _, t := range g.ListTemplates() {
+			fmt.Println(t)
 		}
 		return nil
 	},

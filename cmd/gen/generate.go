@@ -16,15 +16,16 @@ var generateCmd = &cli.Command{
 	Aliases: []string{"g"},
 	Usage:   "generates the given template",
 	Action: func(c *cli.Context) error {
-		cfg, err := gen.NewConfig(c.String("file"))
+		g := gen.New()
+		err := g.Read(c.String("file"))
 		if err != nil {
 			return err
 		}
 
 		name := c.Args().First()
-		tpl := cfg.Find(name)
+		tpl := g.FindTemplate(name)
 		if tpl == nil {
-			return fmt.Errorf("error: template %q not found. templates available: %s", name, strings.Join(cfg.ListTemplates(), ", "))
+			return fmt.Errorf("error: template %q not found. templates available: %s", name, strings.Join(g.ListTemplates(), ", "))
 		}
 
 		// Prompt user for additional information.
@@ -38,30 +39,28 @@ var generateCmd = &cli.Command{
 			Env:    tpl.Environment,
 		}
 
-		errs := tpl.ValidateEnvironment()
+		errs := Errors(tpl.ValidateEnvironment())
 		if len(errs) > 0 {
-			return cli.NewMultiError(errs...)
+			return errs
 		}
 
+		errs = []error{}
 		for _, act := range tpl.Actions {
-			t, err := gen.Read(act.Template)
+			err := act.Exec(data)
+			if errors.Is(err, os.ErrExist) {
+				NewWarning(fmt.Sprintf("error: file exists at %s", act.Path))
+				continue
+			}
+			if errors.Is(err, gen.ErrEmpty) {
+				NewWarning(fmt.Sprintf("error: file is empty %s", act.Template))
+				continue
+			}
 			if err != nil {
-				NewWarning(fmt.Sprintf("error: %s", err))
+				errs = append(errs, err)
 				continue
 			}
-			if len(t) == 0 {
-				NewWarning(fmt.Sprintf("error: template is empty, skipping %s", act.Template))
-				continue
-			}
-			if err := gen.Write(act.Path, t, data); err != nil {
-				if errors.Is(err, os.ErrExist) {
-					NewWarning(fmt.Sprintf("error: file exists at %s", act.Path))
-				} else {
-					NewWarning(fmt.Sprintf("error: write failed: %s", err))
-				}
-				continue
-			}
+			NewSuccess(fmt.Sprintf("success: wrote to %s", act.Path))
 		}
-		return nil
+		return errs
 	},
 }

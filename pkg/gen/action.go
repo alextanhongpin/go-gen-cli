@@ -1,6 +1,18 @@
 package gen
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+const (
+	TEMPLATE_PATH = "templates"
+	PKG_PATH      = "pkg"
+)
+
+var (
+	ErrEmpty = errors.New("file is empty")
+)
 
 type Action struct {
 	Description string `yaml:"description"`
@@ -11,7 +23,31 @@ type Action struct {
 func NewAction(name string) *Action {
 	return &Action{
 		Description: fmt.Sprintf("creates a %s", name),
-		Template:    fmt.Sprintf("templates/%s.go", name),
-		Path:        fmt.Sprintf("pkg/%s.go", name),
+		Template:    fmt.Sprintf("%s/%s.go", TEMPLATE_PATH, name),
+		Path:        fmt.Sprintf("%s/%s.go", PKG_PATH, name),
 	}
+}
+
+func (a *Action) TouchTemplate() error {
+	return Touch(a.Template)
+}
+
+func (a *Action) RemoveTemplate() error {
+	return RemoveIfExists(a.Template)
+}
+
+func (a *Action) RemoveGeneratedFile() error {
+	return RemoveIfExists(a.Path)
+}
+
+// Generate reads from the template and write to the destination.
+func (a *Action) Exec(data interface{}) error {
+	b, err := Read(a.Template)
+	if err != nil {
+		return err
+	}
+	if len(b) == 0 {
+		return ErrEmpty
+	}
+	return Write(a.Path, b, data)
 }

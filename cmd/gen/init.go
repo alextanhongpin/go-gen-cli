@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"os"
 
 	"github.com/alextanhongpin/go-gen/pkg/gen"
 
@@ -13,24 +15,17 @@ var initCmd = &cli.Command{
 	Aliases: []string{"i"},
 	Usage:   "inits a new gen.yaml file",
 	Action: func(c *cli.Context) error {
-		cfg := gen.Config{
-			Templates: []*gen.Template{
-				{
-					Name:        "hello",
-					Description: "hello template",
-					Actions: []*gen.Action{
-						gen.NewAction("hello"),
-						gen.NewAction("hello_test"),
-					},
-				},
-			},
+		g := gen.New()
+		g.AddTemplate(gen.NewTemplate("hello_world"))
+		err := g.Write(c.String("file"))
+		if errors.Is(err, os.ErrExist) {
+			return errors.New(fmt.Sprintf("error: config exists %s", c.String("file")))
 		}
-
-		cfgPath := c.String("file")
-		if err := c.WriteConfigIfNotExists(cfgPath); err != nil {
+		if err != nil {
 			return err
 		}
-		NewSuccess(fmt.Sprintf("success: %s written", cfgPath))
+
+		NewSuccess(fmt.Sprintf("success: config generated at %s", c.String("file")))
 		return nil
 	},
 }
