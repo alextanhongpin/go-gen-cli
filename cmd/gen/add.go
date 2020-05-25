@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/alextanhongpin/go-gen/pkg/gen"
@@ -20,7 +19,7 @@ var addCmd = &cli.Command{
 		b, err := gen.Read(cfgPath)
 		if err != nil {
 			if errors.Is(err, os.ErrNotExist) {
-				return NewError("gen.yaml is missing from the path")
+				return fmt.Errorf("error: %s is missing from the path", cfgPath)
 			}
 			return err
 		}
@@ -54,13 +53,13 @@ var addCmd = &cli.Command{
 		for _, act := range tpl.Actions {
 			if err := gen.Create(act.Template); err != nil {
 				if errors.Is(err, os.ErrExist) {
-					log.Printf("file exists: %s\n", act.Template)
+					NewWarning(fmt.Sprintf("error: file already exists at %s", act.Template))
 					continue
 				} else {
 					return err
 				}
 			}
-			log.Printf("created file %s\n", act.Template)
+			NewSuccess(fmt.Sprintf("success: created file %s", act.Template))
 		}
 		return nil
 	},

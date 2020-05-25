@@ -12,7 +12,7 @@ import (
 var removeCmd = &cli.Command{
 	Name:    "remove",
 	Aliases: []string{"rm"},
-	Usage:   "removes a template and the generated files and configuration",
+	Usage:   "removes a registered template and all the generated files",
 	Action: func(c *cli.Context) error {
 		b, err := gen.Read(cfgPath)
 		if err != nil {

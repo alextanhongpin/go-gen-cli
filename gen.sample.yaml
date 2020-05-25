@@ -8,8 +8,10 @@ templates:
         required: true
     actions:
       - description: create controller
-        template: templates/{{.Prompts.Name}}/controller.go
-        path: tmp/{{.Prompts.Name}}/controller.go
+        template: templates/{{.Prompt.Name}}/controller.go
+        path: tmp/{{.Prompt.Name}}/controller.go
       - description: create service
-        template: templates/{{.Tag}}/service.go
-        path: tmp/{{.Tag}}/service.go
+        template: templates/$PKG/service.go
+        path: tmp/$PKG/service.go
+    environment:
+      PKG: $PKG

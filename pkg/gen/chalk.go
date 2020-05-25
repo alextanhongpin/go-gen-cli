@@ -14,6 +14,6 @@ func Success(msg string) string {
 	return fmt.Sprint(chalk.Green, msg, chalk.Reset)
 }
 
-func Help(msg string) string {
+func Info(msg string) string {
 	return fmt.Sprint(chalk.Blue, msg, chalk.Reset)
 }

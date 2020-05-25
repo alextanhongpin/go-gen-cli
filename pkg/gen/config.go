@@ -43,3 +43,11 @@ func (c *Config) Sort() {
 		return c.Templates[i].Name < c.Templates[j].Name
 	})
 }
+
+func (c *Config) ListTemplates() []string {
+	var result []string
+	for _, tpl := range c.Templates {
+		result = append(result, tpl.Name)
+	}
+	return result
+}

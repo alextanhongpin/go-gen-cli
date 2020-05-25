@@ -2,8 +2,10 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/alextanhongpin/go-gen/pkg/gen"
 
@@ -15,23 +17,6 @@ var generateCmd = &cli.Command{
 	Name:    "generate",
 	Aliases: []string{"g"},
 	Usage:   "generates the given template",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:        "pkg",
-			Usage:       "Sets the package name",
-			Destination: &data.PackageName,
-		},
-		&cli.StringFlag{
-			Name:        "struct",
-			Usage:       "Sets the struct name",
-			Destination: &data.StructName,
-		},
-		&cli.StringFlag{
-			Name:        "tag",
-			Usage:       "Sets a tag",
-			Destination: &data.Tag,
-		},
-	},
 	Action: func(c *cli.Context) error {
 		b, err := gen.Read(cfgPath)
 		if err != nil {
@@ -47,29 +32,35 @@ var generateCmd = &cli.Command{
 		name := c.Args().First()
 		tpl := cfg.Find(name)
 		if tpl == nil {
-			return errors.New("template not found")
+			return fmt.Errorf("error: template %q not found. templates available: %s", name, strings.Join(cfg.ListTemplates(), ", "))
 		}
-		data.Template = tpl
 
 		// Prompt user for additional information.
-		prompts, err := gen.Prompts(tpl.Prompts)
+		prompt, err := gen.Prompts(tpl.Prompts)
 		if err != nil {
 			return err
 		}
-		data.Prompts = prompts
+		data.Prompt = prompt
+		data.Env = tpl.Environment
+		log.Println(string(b))
+		log.Println(data.Env)
 
 		for _, act := range tpl.Actions {
 			t, err := gen.Read(act.Template)
 			if err != nil {
-				log.Printf("error reading template: %v\n", err)
+				NewWarning(fmt.Sprintf("error: %s", err))
 				continue
 			}
-			if len(string(t)) == 0 {
-				log.Printf("template is empty: %v\n", err)
+			if len(t) == 0 {
+				NewWarning(fmt.Sprintf("error: template is empty, skipping %s", act.Template))
 				continue
 			}
 			if err := gen.Write(act.Path, t, data); err != nil {
-				log.Printf("error writing: %v\n", err)
+				if errors.Is(err, os.ErrExist) {
+					NewWarning(fmt.Sprintf("error: file exists at %s", act.Path))
+				} else {
+					NewWarning(fmt.Sprintf("error: write failed: %s", err))
+				}
 				continue
 			}
 		}

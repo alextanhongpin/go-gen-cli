@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"sort"
 
@@ -11,19 +11,24 @@ import (
 )
 
 type Data struct {
-	PackageName string
-	StructName  string
-	Tag         string
-	Template    *gen.Template
-	Prompts     map[string]interface{}
+	Prompt map[string]interface{}
+	Env    map[string]interface{}
 }
 
 var data Data
 
 var cfgPath string
 
-func NewError(msg string) error {
-	return cli.NewExitError(gen.Warning(msg), 1)
+func NewWarning(msg string) {
+	fmt.Println(gen.Warning(msg))
+}
+
+func NewInfo(msg string) {
+	fmt.Println(gen.Info(msg))
+}
+
+func NewSuccess(msg string) {
+	fmt.Println(gen.Success(msg))
 }
 
 func main() {
@@ -51,6 +56,7 @@ func main() {
 			removeCmd,
 			generateCmd,
 			lsCmd,
+			clearCmd,
 		},
 	}
 
@@ -58,6 +64,7 @@ func main() {
 	sort.Sort(cli.CommandsByName(app.Commands))
 
 	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
+		NewWarning(err.Error())
+		os.Exit(1)
 	}
 }

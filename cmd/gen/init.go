@@ -21,10 +21,10 @@ var initCmd = &cli.Command{
 				{
 					Name:        "hello",
 					Description: "hello template",
-					Actions: []*gen.Action{
-						gen.NewAction("hello"),
-						gen.NewAction("hello_test"),
-					},
+					// Actions: []*gen.Action{
+					//         gen.NewAction("hello"),
+					//         gen.NewAction("hello_test"),
+					// },
 				},
 			},
 		}
@@ -36,15 +36,16 @@ var initCmd = &cli.Command{
 		f, err := gen.Open(cfgPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL)
 		if err != nil {
 			if errors.Is(err, os.ErrExist) {
-				return NewError("gen.yaml already exists")
+				return fmt.Errorf("error: %s already exists", cfgPath)
 			}
 			return err
 		}
 		defer f.Close()
+
 		if _, err := f.Write(b); err != nil {
 			return err
 		}
-		fmt.Println(gen.Success(fmt.Sprintf("%s written", cfgPath)))
+		NewSuccess(fmt.Sprintf("success: %s written", cfgPath))
 		return nil
 	},
 }
