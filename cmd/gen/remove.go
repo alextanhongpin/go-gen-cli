@@ -26,15 +26,7 @@ var removeCmd = &cli.Command{
 		}
 
 		name := c.Args().First()
-		_ = cfg.Remove(name)
-
-		b, err := yaml.Marshal(&cfg)
-		if err != nil {
-			return err
-		}
-		if err := gen.Overwrite(cfgPath, b); err != nil {
-			return err
-		}
+		tpl := cfg.Find(name)
 
 		for _, act := range tpl.Actions {
 			// Format template and path name.
@@ -44,6 +36,16 @@ var removeCmd = &cli.Command{
 			if err := gen.RemoveIfExists(act.Path); err != nil {
 				return err
 			}
+		}
+
+		_ = cfg.Remove(name)
+
+		b, err = yaml.Marshal(&cfg)
+		if err != nil {
+			return err
+		}
+		if err := gen.Overwrite(cfgPath, b); err != nil {
+			return err
 		}
 
 		return nil

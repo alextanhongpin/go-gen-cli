@@ -33,11 +33,14 @@ var generateCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		rawCfg := gen.Read(cfgPath)
-		rawCfg = []byte(os.ExpandEnv(string(rawCfg)))
+		b, err := gen.Read(cfgPath)
+		if err != nil {
+			return err
+		}
+		b = []byte(os.ExpandEnv(string(b)))
 
 		var cfg gen.Config
-		if err := yaml.Unmarshal(rawCfg, &cfg); err != nil {
+		if err := yaml.Unmarshal(b, &cfg); err != nil {
 			return err
 		}
 

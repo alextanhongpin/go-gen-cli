@@ -33,7 +33,7 @@ func Open(name string, flag int) (*os.File, error) {
 	return file, nil
 }
 
-func Resolve(name string) (string, err) {
+func Resolve(name string) (string, error) {
 	dir, err := os.Getwd()
 	if err != nil {
 		return "", err
@@ -59,13 +59,13 @@ func Read(name string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	r, err = os.Open(path)
+	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
-	defer r.Close()
+	defer f.Close()
 
-	b, err := ioutil.ReadAll(r)
+	b, err := ioutil.ReadAll(f)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func Write(out string, tpl []byte, data interface{}) error {
 		return err
 	}
 
-	_, err := w.Write(b2)
+	_, err = w.Write(b2)
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func Overwrite(name string, content []byte) error {
 		return err
 	}
 	defer f.Close()
-	_, err := f.Write(content)
+	_, err = f.Write(content)
 	return err
 }
 
@@ -118,7 +118,7 @@ func RemoveIfExists(name string) error {
 	if err != nil {
 		return err
 	}
-	err := os.Remove(path)
+	err = os.Remove(path)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil
 	}

@@ -7,16 +7,16 @@ import (
 )
 
 type Prompt struct {
-	Name     string   `yaml:"name"`
-	Message  string   `yaml:"message"`
-	Help     string   `yaml:"help"`
-	Default  string   `yaml:"default"`
-	Selected []string `yaml:"selected"`
-	Type     string   `yaml:"type"`
-	Confirm  bool     `yaml:"confirm"`
-	PageSize int      `yaml:"page_size"`
-	Required bool     `yaml:"required"`
-	Options  []string `yaml:"options"`
+	Name         string   `yaml:"name"`
+	Message      string   `yaml:"message"`
+	Help         string   `yaml:"help"`
+	Default      string   `yaml:"default"`
+	Selected     []string `yaml:"selected"`
+	Type         string   `yaml:"type"`
+	Confirmation bool     `yaml:"confirm"`
+	PageSize     int      `yaml:"page_size"`
+	Required     bool     `yaml:"required"`
+	Options      []string `yaml:"options"`
 }
 
 func (p *Prompt) Input() *survey.Question {
@@ -87,7 +87,7 @@ func (p *Prompt) Confirm() *survey.Question {
 		Name: p.Name,
 		Prompt: &survey.Confirm{
 			Message: p.Message,
-			Default: p.Confirm,
+			Default: p.Confirmation,
 			Help:    p.Help,
 		},
 	}
