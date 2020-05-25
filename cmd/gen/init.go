@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/alextanhongpin/go-gen/pkg/gen"
 
@@ -15,44 +14,27 @@ var initCmd = &cli.Command{
 	Aliases: []string{"i"},
 	Usage:   "inits a new gen.yaml file",
 	Action: func(c *cli.Context) error {
-		// Write-only, and create only if it does not exist.
-		w, err := gen.Open(cfgPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL)
-		if err != nil {
-			return err
-		}
-		defer w.Close()
-
-		var cfg gen.Config
-
-		var tpl gen.Template
-		tpl = gen.Template{
-			Name:        "test",
-			Description: "test template",
-			Actions: []*gen.Action{
+		cfg := gen.Config{
+			Templates: []*gen.Template{
 				{
-					Description: "generate test",
-					Template:    "templates/test.go",
-					Path:        "pkg/test.go",
-				},
-				{
-					Description: "generate test",
-					Template:    "templates/test_test.go",
-					Path:        "pkg/test.go",
+					Name:        "hello ",
+					Description: "hello template",
+					Actions: []*gen.Action{
+						gen.NewAction("hello"),
+						gen.NewAction("hello_test"),
+					},
 				},
 			},
 		}
-		cfg.Templates = append(cfg.Templates, &tpl)
 
 		d, err := yaml.Marshal(&cfg)
 		if err != nil {
 			return err
 		}
-
-		n, err := w.Write(d)
-		if err != nil {
+		if err := gen.Write(cfgPath, d, nil); err != nil {
 			return err
 		}
-		fmt.Printf("Wrote config to %s (%d bytes)", cfgPath, n)
+		fmt.Printf("Wrote config to %s", cfgPath)
 		return nil
 	},
 }
