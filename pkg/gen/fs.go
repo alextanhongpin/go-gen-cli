@@ -2,8 +2,6 @@ package gen
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -33,19 +31,22 @@ func Open(fname string, flag int) (*os.File, error) {
 	return file, nil
 }
 
-// Read reads a file and creates it if it does not exist.
-func Read(in string) ([]byte, error) {
-	// Open as read-only, create if not exists.
-	r, err := Open(in, os.O_RDONLY|os.O_CREATE|os.O_EXCL)
+// Create creates a file and its directories if not exists, and err when
+// exists.
+func Create(name string) error {
+	f, err := Open(name, os.O_RDONLY|os.O_CREATE|os.O_EXCL)
 	if err != nil {
-		if errors.Is(err, os.ErrExist) {
-			r, err = os.Open(in)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, err
-		}
+		return err
+	}
+	defer f.Close()
+	return nil
+}
+
+// Read reads a file and creates it if it does not exist.
+func Read(name string) ([]byte, error) {
+	r, err = os.Open(name)
+	if err != nil {
+		return nil, err
 	}
 	defer r.Close()
 
@@ -80,12 +81,9 @@ func Write(out string, tpl []byte, data interface{}) error {
 		return err
 	}
 
-	n, err := w.Write(b2)
+	_, err := w.Write(b2)
 	if err != nil {
 		return err
 	}
-
-	fmt.Printf("write %d bytes\n", n)
-
 	return nil
 }
