@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -42,8 +41,12 @@ var generateCmd = &cli.Command{
 		}
 		data.Prompt = prompt
 		data.Env = tpl.Environment
-		log.Println(string(b))
-		log.Println(data.Env)
+
+		for key, value := range tpl.Environment {
+			if gen.IsZero(value) {
+				return fmt.Errorf("ENV %s is specified, but the value is empty", key)
+			}
+		}
 
 		for _, act := range tpl.Actions {
 			t, err := gen.Read(act.Template)
