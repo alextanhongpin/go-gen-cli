@@ -1,8 +1,6 @@
 templates:
   - name: test
     description: test template
-    template: templates/test.go
-    path: pkg/test.go
     prompts:
       - name: Name
         message: What is your name?

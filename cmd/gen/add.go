@@ -16,9 +16,6 @@ var addCmd = &cli.Command{
 	Name:    "add",
 	Aliases: []string{"a"},
 	Usage:   "adds a new template",
-	Flags: []cli.Flag{
-		&cli.BoolFlag{Name: "multiple", Aliases: []string{"m"}},
-	},
 	Action: func(c *cli.Context) error {
 		f, err := gen.Open(cfgPath, os.O_RDWR)
 		if err != nil {
@@ -47,17 +44,12 @@ var addCmd = &cli.Command{
 				Name:        tplArg,
 				Description: fmt.Sprintf("%s template", tplArg),
 			}
-			if c.Bool("multiple") {
-				tpl.Actions = []*gen.Action{
-					{
-						Description: fmt.Sprintf("%s template", tplArg),
-						Template:    fmt.Sprintf("templates/%s.go", tplArg),
-						Path:        fmt.Sprintf("pkg/%s.go", tplArg),
-					},
-				}
-			} else {
-				tpl.Template = fmt.Sprintf("templates/%s.go", tplArg)
-				tpl.Path = fmt.Sprintf("pkg/%s.go", tplArg)
+			tpl.Actions = []*gen.Action{
+				{
+					Description: fmt.Sprintf("%s template", tplArg),
+					Template:    fmt.Sprintf("templates/%s.go", tplArg),
+					Path:        fmt.Sprintf("pkg/%s.go", tplArg),
+				},
 			}
 			cfg.Templates = append(cfg.Templates, tpl)
 
@@ -73,30 +65,17 @@ var addCmd = &cli.Command{
 			}
 		}
 
-		if c.Bool("multiple") {
-			for _, act := range tpl.Actions {
-				r, err := gen.Open(act.Template, os.O_RDONLY|os.O_CREATE|os.O_EXCL)
-				defer r.Close()
-				if errors.Is(err, os.ErrExist) {
-					log.Printf("file exists: %s\n", act.Template)
-					continue
-				}
-				if err != nil {
-					return err
-				}
-				log.Printf("created file %s\n", act.Template)
-			}
-		} else {
-			r, err := gen.Open(tpl.Template, os.O_RDONLY|os.O_CREATE|os.O_EXCL)
+		for _, act := range tpl.Actions {
+			r, err := gen.Open(act.Template, os.O_RDONLY|os.O_CREATE|os.O_EXCL)
 			defer r.Close()
 			if errors.Is(err, os.ErrExist) {
-				log.Printf("file exists: %s\n", tpl.Template)
-				return nil
+				log.Printf("file exists: %s\n", act.Template)
+				continue
 			}
 			if err != nil {
 				return err
 			}
-			log.Printf("created file %s\n", tpl.Template)
+			log.Printf("created file %s\n", act.Template)
 		}
 		return nil
 	},

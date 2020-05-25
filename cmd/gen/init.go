@@ -14,9 +14,6 @@ var initCmd = &cli.Command{
 	Name:    "init",
 	Aliases: []string{"i"},
 	Usage:   "inits a new gen.yaml file",
-	Flags: []cli.Flag{
-		&cli.BoolFlag{Name: "multiple", Aliases: []string{"m"}},
-	},
 	Action: func(c *cli.Context) error {
 		// Write-only, and create only if it does not exist.
 		w, err := gen.Open(cfgPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL)
@@ -28,30 +25,21 @@ var initCmd = &cli.Command{
 		var cfg gen.Config
 
 		var tpl gen.Template
-		if c.Bool("multiple") {
-			tpl = gen.Template{
-				Name:        "test",
-				Description: "test template",
-				Actions: []*gen.Action{
-					{
-						Description: "generate test",
-						Template:    "templates/test.go",
-						Path:        "pkg/test.go",
-					},
-					{
-						Description: "generate test",
-						Template:    "templates/test_test.go",
-						Path:        "pkg/test.go",
-					},
+		tpl = gen.Template{
+			Name:        "test",
+			Description: "test template",
+			Actions: []*gen.Action{
+				{
+					Description: "generate test",
+					Template:    "templates/test.go",
+					Path:        "pkg/test.go",
 				},
-			}
-		} else {
-			tpl = gen.Template{
-				Name:        "test",
-				Description: "test template",
-				Template:    "templates/test.go",
-				Path:        "pkg/test.go",
-			}
+				{
+					Description: "generate test",
+					Template:    "templates/test_test.go",
+					Path:        "pkg/test.go",
+				},
+			},
 		}
 		cfg.Templates = append(cfg.Templates, &tpl)
 

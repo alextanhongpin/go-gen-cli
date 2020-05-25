@@ -75,30 +75,23 @@ var removeCmd = &cli.Command{
 			return err
 		}
 
-		if len(tpl.Actions) > 0 {
-			for _, act := range tpl.Actions {
-				// Format template and path name.
-				var src, dst bytes.Buffer
-				srctpl := template.Must(template.New("src").Parse(act.Template))
-				_ = srctpl.Execute(&src, data)
+		for _, act := range tpl.Actions {
+			// Format template and path name.
+			var src, dst bytes.Buffer
+			srctpl := template.Must(template.New("src").Parse(act.Template))
+			_ = srctpl.Execute(&src, data)
 
-				dsttpl := template.Must(template.New("dst").Parse(act.Path))
-				_ = dsttpl.Execute(&dst, data)
+			dsttpl := template.Must(template.New("dst").Parse(act.Path))
+			_ = dsttpl.Execute(&dst, data)
 
-				if err := os.Remove(src.String()); !errors.Is(err, os.ErrNotExist) {
-					return err
-				}
-				if err := os.Remove(dst.String()); !errors.Is(err, os.ErrNotExist) {
-					return err
-				}
+			if err := os.Remove(src.String()); !errors.Is(err, os.ErrNotExist) {
+				return err
+			}
+			if err := os.Remove(dst.String()); !errors.Is(err, os.ErrNotExist) {
+				return err
 			}
 		}
-		if err := os.Remove(tpl.Template); !errors.Is(err, os.ErrNotExist) {
-			return err
-		}
-		if err := os.Remove(tpl.Path); !errors.Is(err, os.ErrNotExist) {
-			return err
-		}
+
 		return nil
 	},
 }
