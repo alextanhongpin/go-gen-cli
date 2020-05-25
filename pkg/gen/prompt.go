@@ -1,7 +1,7 @@
 package gen
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/tj/survey"
 )
@@ -19,52 +19,102 @@ type Prompt struct {
 	Options  []string `yaml:"options"`
 }
 
+func (p *Prompt) Input() *survey.Question {
+	q := &survey.Question{
+		Name: p.Name,
+		Prompt: &survey.Input{
+			Message: p.Message,
+			Default: p.Default,
+			Help:    p.Help,
+		},
+	}
+	if p.Required {
+		q.Validate = survey.Required
+	}
+	return q
+}
+
+func (p *Prompt) Select() *survey.Question {
+	q := &survey.Question{
+		Name: p.Name,
+		Prompt: &survey.Select{
+			Message: p.Message,
+			Options: p.Options,
+			Default: p.Default,
+			Help:    p.Help,
+		},
+	}
+	if p.Required {
+		q.Validate = survey.Required
+	}
+	return q
+
+}
+
+func (p *Prompt) Password() *survey.Question {
+	q := &survey.Question{
+		Name: p.Name,
+		Prompt: &survey.Password{
+			Message: p.Message,
+			Help:    p.Help,
+		},
+	}
+	if p.Required {
+		q.Validate = survey.Required
+	}
+	return q
+}
+
+func (p *Prompt) MultiSelect() *survey.Question {
+	q := &survey.Question{
+		Name: p.Name,
+		Prompt: &survey.MultiSelect{
+			Message:  p.Message,
+			Options:  p.Options,
+			Default:  p.Selected,
+			Help:     p.Help,
+			PageSize: p.PageSize,
+		},
+	}
+	if p.Required {
+		q.Validate = survey.Required
+	}
+	return q
+}
+
+func (p *Prompt) Confirm() *survey.Question {
+	q := &survey.Question{
+		Name: p.Name,
+		Prompt: &survey.Confirm{
+			Message: p.Message,
+			Default: p.Confirm,
+			Help:    p.Help,
+		},
+	}
+	if p.Required {
+		q.Validate = survey.Required
+	}
+	return q
+}
+
 func Prompts(prompts []*Prompt) (map[string]interface{}, error) {
 	var qs []*survey.Question
 	answers := make(map[string]interface{})
 	for _, p := range prompts {
-		q := &survey.Question{
-			Name: p.Name,
-		}
-		if p.Required {
-			q.Validate = survey.Required
-		}
-
+		var q *survey.Question
 		switch p.Type {
 		case "input":
-			q.Prompt = &survey.Input{
-				Message: p.Message,
-				Default: p.Default,
-				Help:    p.Help,
-			}
+			q = p.Input()
 		case "select":
-			q.Prompt = &survey.Select{
-				Message: p.Message,
-				Options: p.Options,
-				Default: p.Default,
-				Help:    p.Help,
-			}
+			q = p.Select()
 		case "password":
-			q.Prompt = &survey.Password{
-				Message: p.Message,
-				Help:    p.Help,
-			}
+			q = p.Password()
 		case "multiselect":
-			q.Prompt = &survey.MultiSelect{
-				Message:  p.Message,
-				Options:  p.Options,
-				Default:  p.Selected,
-				Help:     p.Help,
-				PageSize: p.PageSize,
-			}
+			q = p.MultiSelect()
 		case "confirm":
-			q.Prompt = &survey.Confirm{
-				Message: p.Message,
-				Default: p.Confirm,
-				Help:    p.Help,
-			}
+			q = p.Confirm()
 		default:
-			log.Println("not supported", p.Type)
+			return nil, fmt.Errorf("prompt %q is not supported", p.Name)
 		}
 		qs = append(qs, q)
 	}
