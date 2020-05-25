@@ -15,12 +15,13 @@ func (c *Config) Find(name string) *Template {
 	return nil
 }
 
-func (c *Config) Remove(name string) {
+func (c *Config) Remove(name string) bool {
 	idx := c.Index(name)
 	if idx == -1 {
-		return
+		return false
 	}
 	c.Templates = append(c.Templates[:idx], c.Templates[idx+1:]...)
+	return true
 }
 
 func (c *Config) Index(name string) int {

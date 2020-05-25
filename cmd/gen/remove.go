@@ -1,9 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"errors"
-	"html/template"
 	"os"
 
 	"github.com/alextanhongpin/go-gen/pkg/gen"
@@ -16,78 +13,35 @@ var removeCmd = &cli.Command{
 	Name:    "remove",
 	Aliases: []string{"rm"},
 	Usage:   "removes a template and the generated files and configuration",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:        "pkg",
-			Usage:       "Sets the package name",
-			Destination: &data.PackageName,
-		},
-		&cli.StringFlag{
-			Name:        "struct",
-			Usage:       "Sets the struct name",
-			Destination: &data.StructName,
-		},
-		&cli.StringFlag{
-			Name:        "tag",
-			Usage:       "Sets a tag",
-			Destination: &data.Tag,
-		},
-	},
 	Action: func(c *cli.Context) error {
-		f, err := gen.Open(cfgPath, os.O_RDWR)
+		b, err := gen.Read(cfgPath)
 		if err != nil {
 			return err
 		}
-		defer f.Close()
+		b = []byte(os.ExpandEnv(string(b)))
 
 		var cfg gen.Config
-		if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
+		if err := yaml.Unmarshal(b, &cfg); err != nil {
 			return err
 		}
 
-		tplArg := c.Args().First()
-		if len(tplArg) == 0 {
-			return errors.New("template name cannot be empty")
-		}
+		name := c.Args().First()
+		_ = cfg.Remove(name)
 
-		var tpl *gen.Template
-		var i int
-		for j, t := range cfg.Templates {
-			if t.Name == tplArg {
-				i = j
-				tpl = t
-				break
-			}
-		}
-		if tpl == nil {
-			return errors.New("no template found")
-		}
-
-		cfg.Templates = append(cfg.Templates[:i], cfg.Templates[i+1:]...)
-
-		if err := f.Truncate(0); err != nil {
+		b, err := yaml.Marshal(&cfg)
+		if err != nil {
 			return err
 		}
-		if _, err := f.Seek(0, 0); err != nil {
-			return err
-		}
-		if err := yaml.NewEncoder(f).Encode(&cfg); err != nil {
+		if err := gen.Overwrite(cfgPath, b); err != nil {
 			return err
 		}
 
 		for _, act := range tpl.Actions {
 			// Format template and path name.
-			var src, dst bytes.Buffer
-			srctpl := template.Must(template.New("src").Parse(act.Template))
-			_ = srctpl.Execute(&src, data)
-
-			dsttpl := template.Must(template.New("dst").Parse(act.Path))
-			_ = dsttpl.Execute(&dst, data)
-
-			if err := os.Remove(src.String()); !errors.Is(err, os.ErrNotExist) {
+			if err := gen.RemoveIfExists(act.Template); err != nil {
 				return err
 			}
-			if err := os.Remove(dst.String()); !errors.Is(err, os.ErrNotExist) {
+			if err := gen.RemoveIfExists(act.Path); err != nil {
 				return err
 			}
 		}

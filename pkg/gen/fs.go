@@ -2,6 +2,7 @@ package gen
 
 import (
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"os"
 	"path"
@@ -12,23 +13,33 @@ import (
 // Open opens the given file with the provided flag, and
 // created the nested directories and file if not
 // exists.
-func Open(fname string, flag int) (*os.File, error) {
-	dir, err := os.Getwd()
+func Open(name string, flag int) (*os.File, error) {
+	dirpath, err := Resolve(path.Dir(name))
 	if err != nil {
 		return nil, err
 	}
-
-	dirpath := filepath.Join(dir, path.Dir(fname))
 	if err := os.MkdirAll(dirpath, os.ModePerm); err != nil {
 		return nil, err
 	}
 
-	filepath := filepath.Join(dir, fname)
+	filepath, err := Resolve(name)
+	if err != nil {
+		return nil, err
+	}
 	file, err := os.OpenFile(filepath, flag, 0644)
 	if err != nil {
 		return nil, err
 	}
 	return file, nil
+}
+
+func Resolve(name string) (string, err) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	path := filepath.Join(dir, name)
+	return path, nil
 }
 
 // Create creates a file and its directories if not exists, and err when
@@ -44,7 +55,11 @@ func Create(name string) error {
 
 // Read reads a file and creates it if it does not exist.
 func Read(name string) ([]byte, error) {
-	r, err = os.Open(name)
+	path, err := Resolve(name)
+	if err != nil {
+		return nil, err
+	}
+	r, err = os.Open(path)
 	if err != nil {
 		return nil, err
 	}
@@ -86,4 +101,26 @@ func Write(out string, tpl []byte, data interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func Overwrite(name string, content []byte) error {
+	f, err := Open(name, os.O_WRONLY|os.O_TRUNC)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err := f.Write(content)
+	return err
+}
+
+func RemoveIfExists(name string) error {
+	path, err := Resolve(name)
+	if err != nil {
+		return err
+	}
+	err := os.Remove(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	return err
 }

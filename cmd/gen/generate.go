@@ -42,7 +42,7 @@ var generateCmd = &cli.Command{
 		}
 
 		name := c.Args().First()
-		tpl := cfg.Templates.Find(name)
+		tpl := cfg.Find(name)
 		if tpl == nil {
 			return errors.New("template not found")
 		}

@@ -17,37 +17,33 @@ var addCmd = &cli.Command{
 	Aliases: []string{"a"},
 	Usage:   "adds a new template",
 	Action: func(c *cli.Context) error {
-		// Open config file.
-		f, err := gen.Open(cfgPath, os.O_RDWR)
+		b, err := gen.Read(cfgPath)
 		if err != nil {
 			return err
 		}
-		defer f.Close()
+		b = []byte(os.ExpandEnv(string(b)))
 
 		// Load as YAML.
 		var cfg gen.Config
-		if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
+		if err := yaml.Unmarshal(b, &cfg); err != nil {
 			return err
 		}
 
 		name := c.Args().First()
-		tpl := cfg.Templates.Find(name)
+		tpl := cfg.Find(name)
 		if tpl == nil {
 			tpl = &gen.Template{
 				Name:        name,
 				Description: fmt.Sprintf("%s template", name),
 			}
 			tpl.Actions = []*gen.Action{gen.NewAction(name)}
-			cfg.Templates = append(cfg.Templates, tpl)
+			cfg.Add(tpl)
 
-			if err := f.Truncate(0); err != nil {
+			b, err := yaml.Marshal(&cfg)
+			if err != nil {
 				return err
 			}
-			if _, err := f.Seek(0, 0); err != nil {
-				return err
-			}
-
-			if err := yaml.NewEncoder(f).Encode(&cfg); err != nil {
+			if err := gen.Overwrite(cfgPath, b); err != nil {
 				return err
 			}
 		}
