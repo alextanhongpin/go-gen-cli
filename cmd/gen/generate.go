@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"errors"
-	"html/template"
 	"log"
 	"os"
 
@@ -35,25 +33,16 @@ var generateCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		f, err := gen.Open(cfgPath, os.O_RDONLY)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
+		rawCfg := gen.Read(cfgPath)
+		rawCfg = []byte(os.ExpandEnv(string(rawCfg)))
 
 		var cfg gen.Config
-		if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
+		if err := yaml.Unmarshal(rawCfg, &cfg); err != nil {
 			return err
 		}
 
-		tplArg := c.Args().First()
-		var tpl *gen.Template
-		for _, t := range cfg.Templates {
-			if t.Name == tplArg {
-				tpl = t
-				break
-			}
-		}
+		name := c.Args().First()
+		tpl := cfg.Templates.Find(name)
 		if tpl == nil {
 			return errors.New("template not found")
 		}
@@ -67,15 +56,7 @@ var generateCmd = &cli.Command{
 		data.Prompts = prompts
 
 		for _, act := range tpl.Actions {
-			// Format template and path name.
-			var src, dst bytes.Buffer
-			srctpl := template.Must(template.New("src").Parse(act.Template))
-			_ = srctpl.Execute(&src, data)
-
-			dsttpl := template.Must(template.New("dst").Parse(act.Path))
-			_ = dsttpl.Execute(&dst, data)
-
-			t, err := gen.Read(src.String())
+			t, err := gen.Read(act.Template)
 			if err != nil {
 				log.Printf("error reading template: %v\n", err)
 				continue
@@ -84,7 +65,7 @@ var generateCmd = &cli.Command{
 				log.Printf("template is empty: %v\n", err)
 				continue
 			}
-			if err := gen.Write(dst.String(), t, data); err != nil {
+			if err := gen.Write(act.Path, t, data); err != nil {
 				log.Printf("error writing: %v\n", err)
 				continue
 			}
