@@ -38,17 +38,14 @@ var addCmd = &cli.Command{
 		tpl := g.FindTemplate(name)
 		if tpl == nil {
 			tpl = gen.NewTemplate(name)
-			tpl.Actions = append(tpl.Actions, gen.NewAction(name))
 			g.AddTemplate(tpl)
 
 			if err := g.Write(c.String("file")); err != nil {
 				return err
-
 			}
 		}
 
 		var errs Errors
-		fmt.Println(tpl.Actions)
 		for _, act := range tpl.Actions {
 			err := act.TouchTemplate()
 			if errors.Is(err, os.ErrExist) {
