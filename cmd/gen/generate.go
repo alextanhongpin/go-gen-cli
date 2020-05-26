@@ -8,7 +8,7 @@ import (
 
 	"github.com/alextanhongpin/go-gen-cli"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 var generateCmd = &cli.Command{
