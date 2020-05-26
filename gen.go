@@ -13,12 +13,17 @@ import (
 
 type Gen struct {
 	cfgPath string
+	dryRun  bool
 }
 
 func New(cfgPath string) *Gen {
 	return &Gen{
 		cfgPath: cfgPath,
 	}
+}
+
+func (g *Gen) SetDryRun(dryRun bool) {
+	g.dryRun = dryRun
 }
 
 func (g *Gen) Resolve(name string) string {
@@ -38,6 +43,9 @@ func (g *Gen) Read(r io.Reader) ([]byte, error) {
 }
 
 func (g *Gen) Touch(name string) error {
+	if g.dryRun {
+		return nil
+	}
 	rel := g.Resolve(name)
 
 	if err := os.MkdirAll(path.Dir(rel), os.ModePerm); err != nil {
@@ -67,6 +75,9 @@ func (g *Gen) ReadOnlyFile(name string) (*os.File, error) {
 }
 
 func (g *Gen) WriteOnlyFile(name string) (*os.File, error) {
+	if g.dryRun {
+		return os.Stdout, nil
+	}
 	rel := g.Resolve(name)
 	if err := os.MkdirAll(path.Dir(rel), os.ModePerm); err != nil {
 		return nil, err

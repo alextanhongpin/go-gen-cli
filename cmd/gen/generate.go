@@ -15,8 +15,16 @@ var generateCmd = &cli.Command{
 	Name:    "generate",
 	Aliases: []string{"g"},
 	Usage:   "generates the given template",
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:  "dry-run",
+			Usage: "prints to stdout if true",
+		},
+	},
 	Action: func(c *cli.Context) error {
 		g := gen.New(c.String("file"))
+		g.SetDryRun(c.Bool("dry-run"))
+
 		cfg, err := g.LoadConfig()
 		if err != nil {
 			return err
@@ -54,6 +62,7 @@ var generateCmd = &cli.Command{
 			if err != nil {
 				return err
 			}
+
 			defer func() {
 				if err := r.Close(); err != nil {
 					log.Fatal(err)
@@ -63,11 +72,16 @@ var generateCmd = &cli.Command{
 			if err := g.Touch(out); err != nil {
 				return err
 			}
+
 			w, err := g.WriteOnlyFile(out)
 			if err != nil {
 				return err
 			}
+
 			defer func() {
+				if c.Bool("dry-run") {
+					return
+				}
 				if err := w.Close(); err != nil {
 					log.Fatal(err)
 				}
