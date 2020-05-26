@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 	"sort"
@@ -14,6 +15,13 @@ type Data struct {
 }
 
 func main() {
+	var version string
+	b, err := ioutil.ReadFile("VERSION")
+	if err != nil {
+		version = "unknown"
+	}
+	version = string(b)
+
 	flags := []cli.Flag{
 		&cli.StringFlag{
 			Name:    "file",
@@ -29,7 +37,7 @@ func main() {
 		Authors: []*cli.Author{
 			{Name: "Alex Tan", Email: "alextan220990@gmail.com"},
 		},
-		Version: "1.0.0",
+		Version: version,
 		Flags:   flags,
 		Commands: []*cli.Command{
 			initCmd,
