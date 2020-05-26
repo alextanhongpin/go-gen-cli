@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/alextanhongpin/go-gen"
+	"github.com/alextanhongpin/go-gen-cli"
 
 	"github.com/urfave/cli"
 )

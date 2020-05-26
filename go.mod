@@ -1,4 +1,4 @@
-module github.com/alextanhongpin/go-gen
+module github.com/alextanhongpin/go-gen-cli
 
 go 1.14
 
