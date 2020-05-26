@@ -35,7 +35,7 @@ func NewTemplate(name string) *Template {
 func (t *Template) ParseEnvironment() []error {
 	var errors []error
 	for key, value := range t.Environment {
-		if IsZero(value) {
+		if value == "" {
 			errors = append(errors, fmt.Errorf("env %s is specified but no value is provided", key))
 		} else {
 			t.Environment[key] = os.ExpandEnv(value)
