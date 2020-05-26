@@ -3,7 +3,7 @@ package gen
 import "sort"
 
 type Config struct {
-	Templates []*Template `yaml:"templates"`
+	Templates []*Template `yaml:"templates,omitempty"`
 }
 
 func NewConfig() *Config {

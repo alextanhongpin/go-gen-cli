@@ -10,7 +10,7 @@ import (
 
 type Data struct {
 	Prompt map[string]interface{}
-	Env    map[string]interface{}
+	Env    map[string]string
 }
 
 func main() {

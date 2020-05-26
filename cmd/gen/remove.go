@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/alextanhongpin/go-gen"
 
 	"github.com/urfave/cli"
@@ -20,13 +23,13 @@ var removeCmd = &cli.Command{
 		name := c.Args().First()
 		tpl := cfg.Find(name)
 		if tpl == nil {
-			return nil
+			return fmt.Errorf("%s: not found", name)
 		}
 
 		merr := gen.NewMultiError()
 		for _, act := range tpl.Actions {
-			merr.Add(g.Remove(act.Template))
-			merr.Add(g.Remove(act.Path))
+			merr.Add(g.Remove(os.ExpandEnv(act.Template)))
+			merr.Add(g.Remove(os.ExpandEnv(act.Path)))
 		}
 
 		cfg.Remove(name)

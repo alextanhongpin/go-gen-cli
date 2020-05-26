@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/alextanhongpin/go-gen"
 
@@ -20,22 +21,25 @@ var addCmd = &cli.Command{
 		}
 
 		name := c.Args().First()
-		fmt.Println("addingtemplate")
 		tpl := cfg.Find(name)
 		if tpl == nil {
-			fmt.Println("template not found, creating")
 			tpl = gen.NewTemplate(name)
 			cfg.Add(tpl)
 
 			if err := g.WriteConfig(cfg); err != nil {
 				return err
 			}
+			fmt.Printf("%s: template added\n", name)
 		}
 
 		merr := gen.NewMultiError()
 		for _, a := range tpl.Actions {
-			merr.Add(g.Touch(a.Template))
+			path := os.ExpandEnv(a.Template)
+			if !merr.Add(g.Touch(path)) {
+				fmt.Printf("%s: file created\n", path)
+			}
 		}
+
 		return merr
 	},
 }

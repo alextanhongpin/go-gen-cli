@@ -1,7 +1,7 @@
 package main
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/alextanhongpin/go-gen"
 
@@ -22,12 +22,14 @@ var clearCmd = &cli.Command{
 		name := c.Args().First()
 		tpl := cfg.Find(name)
 		if tpl == nil {
-			return errors.New("template: not found")
+			return fmt.Errorf("%s: not found", name)
 		}
 
 		merr := gen.NewMultiError()
 		for _, a := range tpl.Actions {
-			merr.Add(g.Remove(a.Template))
+			if !merr.Add(g.Remove(a.Template)) {
+				fmt.Printf("%s: file removed\n", a.Template)
+			}
 		}
 		return merr
 	},

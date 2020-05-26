@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"path"
 
 	"github.com/alextanhongpin/go-gen"
@@ -73,6 +74,9 @@ var generateCmd = &cli.Command{
 			}()
 
 			parser := func(b []byte) ([]byte, error) {
+				if len(b) == 0 {
+					return nil, fmt.Errorf("%s: file empty", in)
+				}
 				b, err = gen.ParseTemplate(b, data)
 				if err != nil {
 					return nil, err
@@ -92,8 +96,10 @@ var generateCmd = &cli.Command{
 
 		merr := gen.NewMultiError()
 		for _, act := range tpl.Actions {
-			if added := merr.Add(copyTo(act.Template, act.Path)); !added {
-				fmt.Println("yes")
+			in := os.ExpandEnv(act.Template)
+			out := os.ExpandEnv(act.Path)
+			if added := merr.Add(copyTo(in, out)); !added {
+				fmt.Printf("%s: file created\n", out)
 			}
 		}
 		return merr

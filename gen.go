@@ -36,6 +36,11 @@ func (g *Gen) Read(r io.Reader) ([]byte, error) {
 
 func (g *Gen) Touch(name string) error {
 	rel := g.Resolve(name)
+
+	if err := os.MkdirAll(path.Dir(rel), os.ModePerm); err != nil {
+		return err
+	}
+
 	f, err := os.OpenFile(rel, os.O_RDONLY|os.O_CREATE|os.O_EXCL, 0644)
 	if err != nil {
 		return err
@@ -60,16 +65,18 @@ func (g *Gen) ReadOnlyFile(name string) (*os.File, error) {
 
 func (g *Gen) WriteOnlyFile(name string) (*os.File, error) {
 	rel := g.Resolve(name)
-	return os.OpenFile(rel, os.O_WRONLY, 0644)
+	if err := os.MkdirAll(path.Dir(rel), os.ModePerm); err != nil {
+		return nil, err
+	}
+	return os.OpenFile(rel, os.O_WRONLY|os.O_TRUNC, 0644)
 }
 
 func (g *Gen) UnmarshalConfig(b []byte, cfg *Config) error {
-	b = []byte(os.ExpandEnv(string(b)))
 	return yaml.Unmarshal(b, &cfg)
 }
 
 func (g *Gen) MarshalConfig(cfg *Config) ([]byte, error) {
-	return yaml.Marshal(cfg)
+	return yaml.Marshal(&cfg)
 }
 
 func (g *Gen) Remove(name string) error {
@@ -134,100 +141,3 @@ func (g *Gen) Copy(r io.Reader, w io.Writer, parser func([]byte) ([]byte, error)
 	_, err = g.Write(w, b)
 	return err
 }
-
-//func main() {
-//// add command
-//g := gen.New("gen.yaml")
-//cfg, err := g.LoadConfig()
-//cfg.Find(name)
-//tsvc := NewTemplateService(cfg.Templates)
-//tpl := tsvc.Find(name)
-//if tpl == nil {
-//tpl = template.New(tplName)
-//tsvc.AddTemplate(tpl)
-//cfg.Templates = tsvc.GetAll()
-//if err := g.WriteConfig(cfg); err != nil {
-//log.Fatal(err)
-//}
-//} // Create template
-//for _, a := range tpl.Actions {
-//// Collect errors.
-//err := g.Touch(a.Template)
-//}
-
-//// init command
-//g := gen.New("gen.yaml")
-//g.Touch("gen.yaml")
-//cfg := NewConfig()
-//err = g.WriteConfig(cfg)
-
-//// generate command
-//g := gen.New("gen.yaml")
-//cfg, err := g.LoadConfig()
-//if err != nil {
-//return err
-//}
-
-//var data Data
-//if err := cfg.ParseEnvironment(); err != nil {
-//return nil, err
-//}
-//data.Env = cfg.Environment
-
-//answers, err = cfg.ParsePrompts()
-//if err != nil {
-//return nil, err
-//}
-//data.Prompt = answers
-
-//parser := func(b []byte) ([]byte, error) {
-//b, err = parseTemplate(b, data)
-//if err != nil {
-//return nil, err
-//}
-
-//if isGoFile(out) {
-//b, err = formatSource(b)
-//if err != nil {
-//return nil, err
-//}
-//}
-//return b, nil
-//}
-
-//readWrite := func(in, out string) error {
-//r, err := g.ReadOnlyFile(in)
-//if err != nil {
-//return err
-//}
-//defer func() {
-//if err := r.Close(); err != nil {
-//log.Fatal(err)
-//}
-//}()
-
-//w, err := g.WriteOnlyFile(out)
-//if err != nil {
-//return err
-//}
-//defer func() {
-//if err := w.Close(); err != nil {
-//log.Fatal(err)
-//}
-//}()
-//return g.Copy(r, w, parser)
-//}
-
-//for _, a := range cfg.Actions {
-//err := readWrite(a.Template, a.Path)
-//}
-//}
-
-//func copy(templates []*Template) []*Template {
-//result := make([]*Template, len(templates))
-//for i, tpl := range templates {
-//result[i] = &Template{}
-//*result[i] = *tpl
-//}
-//return result
-//}
