@@ -15,6 +15,7 @@ require (
 	github.com/stretchr/testify v1.5.1 // indirect
 	github.com/tj/survey v2.0.6+incompatible
 	github.com/urfave/cli v1.22.4
+	github.com/urfave/cli/v2 v2.2.0 // indirect
 	golang.org/x/tools v0.0.0-20200522201501-cb1345f3a375
 	gopkg.in/yaml.v2 v2.3.0
 )
