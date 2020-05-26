@@ -22,7 +22,10 @@ func New(cfgPath string) *Gen {
 }
 
 func (g *Gen) Resolve(name string) string {
-	dir := path.Dir(g.cfgPath)
+	if name == g.cfgPath {
+		return name
+	}
+	dir := filepath.Dir(g.cfgPath)
 	return filepath.Join(dir, name)
 }
 
