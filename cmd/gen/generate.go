@@ -1,11 +1,11 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"os"
+	"log"
+	"path"
 
-	"github.com/alextanhongpin/go-gen/pkg/gen"
+	"github.com/alextanhongpin/go-gen"
 
 	"github.com/urfave/cli"
 )
@@ -15,51 +15,87 @@ var generateCmd = &cli.Command{
 	Aliases: []string{"g"},
 	Usage:   "generates the given template",
 	Action: func(c *cli.Context) error {
-		g := gen.New()
-		err := g.Read(c.String("file"))
+		g := gen.New(c.String("file"))
+		cfg, err := g.LoadConfig()
 		if err != nil {
 			return err
 		}
 
 		name := c.Args().First()
-		tpl := g.FindTemplate(name)
+		tpl := cfg.Find(name)
 		if tpl == nil {
 			return fmt.Errorf("%s: not found", name)
 		}
 
+		// Load environment variables.
+		errs := tpl.ParseEnvironment()
+		if len(errs) > 0 {
+			return gen.NewMultiError(errs...)
+		}
+
 		// Prompt user for additional information.
-		prompt, err := gen.Prompts(tpl.Prompts)
+		answers, err := tpl.ParsePrompts()
 		if err != nil {
 			return err
 		}
 
 		data := Data{
-			Prompt: prompt,
+			Prompt: answers,
 			Env:    tpl.Environment,
 		}
 
-		errs := Errors(tpl.ValidateEnvironment())
-		if len(errs) > 0 {
-			return errs
+		isGoFile := func(name string) bool {
+			return path.Ext(name) == ".go"
 		}
 
-		errs = []error{}
-		for _, act := range tpl.Actions {
-			err := act.Exec(data)
-			if errors.Is(err, os.ErrExist) {
-				gen.Error("%s: file exists", act.Path)
-				continue
-			}
-			if errors.Is(err, gen.ErrEmpty) {
-				gen.Error("%s: file is empty", act.Template)
-				continue
-			}
+		copyTo := func(in, out string) error {
+			r, err := g.ReadOnlyFile(in)
 			if err != nil {
-				errs = append(errs, err)
-				continue
+				return err
 			}
-			gen.Info("%s: file created", act.Path)
+			defer func() {
+				if err := r.Close(); err != nil {
+					log.Fatal(err)
+				}
+			}()
+
+			if err := g.Touch(out); err != nil {
+				return err
+			}
+			w, err := g.WriteOnlyFile(out)
+			if err != nil {
+				return err
+			}
+			defer func() {
+				if err := w.Close(); err != nil {
+					log.Fatal(err)
+				}
+			}()
+
+			parser := func(b []byte) ([]byte, error) {
+				b, err = gen.ParseTemplate(b, data)
+				if err != nil {
+					return nil, err
+				}
+
+				if isGoFile(out) {
+					b, err = gen.FormatSource(b)
+					if err != nil {
+						return nil, err
+					}
+				}
+				return b, nil
+			}
+
+			return g.Copy(r, w, parser)
 		}
-		return errs
+
+		merr := gen.NewMultiError()
+		for _, act := range tpl.Actions {
+			if added := merr.Add(copyTo(act.Template, act.Path)); !added {
+				fmt.Println("yes")
+			}
+		}
+		return merr
 	},
 }

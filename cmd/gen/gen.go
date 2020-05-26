@@ -1,10 +1,10 @@
 package main
 
 import (
+	"log"
 	"os"
 	"sort"
 
-	"github.com/alextanhongpin/go-gen/pkg/gen"
 	"github.com/urfave/cli"
 )
 
@@ -45,7 +45,7 @@ func main() {
 	sort.Sort(cli.CommandsByName(app.Commands))
 
 	if err := app.Run(os.Args); err != nil {
-		gen.Error(err.Error())
+		log.Fatal(err)
 		os.Exit(1)
 	}
 }

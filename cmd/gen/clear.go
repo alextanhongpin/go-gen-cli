@@ -1,7 +1,9 @@
 package main
 
 import (
-	"github.com/alextanhongpin/go-gen/pkg/gen"
+	"errors"
+
+	"github.com/alextanhongpin/go-gen"
 
 	"github.com/urfave/cli"
 )
@@ -11,23 +13,22 @@ var clearCmd = &cli.Command{
 	Aliases: []string{"c"},
 	Usage:   "clears the generated files for a given template",
 	Action: func(c *cli.Context) error {
-		g := gen.New()
-		if err := g.Read(c.String("file")); err != nil {
+		g := gen.New(c.String("file"))
+		cfg, err := g.LoadConfig()
+		if err != nil {
 			return err
 		}
 
 		name := c.Args().First()
-		tpl := g.FindTemplate(name)
-
-		var errors Errors
-		for _, act := range tpl.Actions {
-			if err := act.RemoveGeneratedFile(); err != nil {
-				errors = append(errors, err)
-				continue
-			}
-			gen.Info("%s: file removed", act.Path)
+		tpl := cfg.Find(name)
+		if tpl == nil {
+			return errors.New("template: not found")
 		}
 
-		return errors
+		merr := gen.NewMultiError()
+		for _, a := range tpl.Actions {
+			merr.Add(g.Remove(a.Template))
+		}
+		return merr
 	},
 }

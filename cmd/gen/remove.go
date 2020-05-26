@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/alextanhongpin/go-gen/pkg/gen"
+	"github.com/alextanhongpin/go-gen"
 
 	"github.com/urfave/cli"
 )
@@ -11,31 +11,28 @@ var removeCmd = &cli.Command{
 	Aliases: []string{"rm"},
 	Usage:   "removes a registered template and all the generated files",
 	Action: func(c *cli.Context) error {
-		g := gen.New()
-		err := g.Read(c.String("file"))
+		g := gen.New(c.String("file"))
+		cfg, err := g.LoadConfig()
 		if err != nil {
 			return err
 		}
 
 		name := c.Args().First()
-		tpl := g.FindTemplate(name)
+		tpl := cfg.Find(name)
 		if tpl == nil {
 			return nil
 		}
-		var errors Errors
+
+		merr := gen.NewMultiError()
 		for _, act := range tpl.Actions {
-			if err := act.RemoveTemplate(); err != nil {
-				errors = append(errors, err)
-			}
-			if err := act.RemoveGeneratedFile(); err != nil {
-				errors = append(errors, err)
-			}
-		}
-		if len(errors) > 0 {
-			return errors
+			merr.Add(g.Remove(act.Template))
+			merr.Add(g.Remove(act.Path))
 		}
 
-		g.RemoveTemplate(name)
-		return g.Write(c.String("file"))
+		cfg.Remove(name)
+
+		merr.Add(g.WriteConfig(cfg))
+
+		return merr
 	},
 }

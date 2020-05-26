@@ -1,6 +1,10 @@
 package gen
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+	"html/template"
+)
 
 type Template struct {
 	Name        string                 `yaml:"name,omitempty"`
@@ -25,7 +29,7 @@ func NewTemplate(name string) *Template {
 	}
 }
 
-func (t *Template) ValidateEnvironment() []error {
+func (t *Template) ParseEnvironment() []error {
 	var errors []error
 	for key, value := range t.Environment {
 		if IsZero(value) {
@@ -33,4 +37,19 @@ func (t *Template) ValidateEnvironment() []error {
 		}
 	}
 	return errors
+}
+
+func (t *Template) ParsePrompts() (map[string]interface{}, error) {
+	return Prompts(t.Prompts)
+}
+
+func ParseTemplate(b []byte, data interface{}) ([]byte, error) {
+	t := template.Must(template.New("").Parse(string(b)))
+
+	var bb bytes.Buffer
+	if err := t.Execute(&bb, data); err != nil {
+		return nil, err
+	}
+
+	return bb.Bytes(), nil
 }

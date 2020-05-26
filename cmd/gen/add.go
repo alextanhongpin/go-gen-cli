@@ -1,60 +1,41 @@
 package main
 
 import (
-	"errors"
-	"os"
+	"fmt"
 
-	"github.com/alextanhongpin/go-gen/pkg/gen"
+	"github.com/alextanhongpin/go-gen"
 
 	"github.com/urfave/cli"
 )
-
-type Errors []error
-
-func (e Errors) Error() string {
-	return ""
-}
-
-func (e Errors) Errors() []error {
-	return []error(e)
-}
 
 var addCmd = &cli.Command{
 	Name:    "add",
 	Aliases: []string{"a"},
 	Usage:   "adds a new template",
 	Action: func(c *cli.Context) error {
-		g := gen.New()
-		err := g.Read(c.String("file"))
+		g := gen.New(c.String("file"))
+		cfg, err := g.LoadConfig()
 		if err != nil {
 			return err
 		}
 
 		name := c.Args().First()
-		tpl := g.FindTemplate(name)
+		fmt.Println("addingtemplate")
+		tpl := cfg.Find(name)
 		if tpl == nil {
+			fmt.Println("template not found, creating")
 			tpl = gen.NewTemplate(name)
-			g.AddTemplate(tpl)
+			cfg.Add(tpl)
 
-			if err := g.Write(c.String("file")); err != nil {
+			if err := g.WriteConfig(cfg); err != nil {
 				return err
 			}
 		}
 
-		var errs Errors
-		for _, act := range tpl.Actions {
-			err := act.TouchTemplate()
-			if errors.Is(err, os.ErrExist) {
-				gen.Error("%s: file exists", act.Template)
-				continue
-			}
-			if err != nil {
-				errs = append(errs, err)
-				continue
-			}
-			gen.Info("%s: file created", act.Template)
+		merr := gen.NewMultiError()
+		for _, a := range tpl.Actions {
+			merr.Add(g.Touch(a.Template))
 		}
-
-		return errs
+		return merr
 	},
 }
