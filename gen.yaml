@@ -9,11 +9,12 @@ templates:
         required: true
     volumes:
       - templates/controller.tmpl:/tmp/{{.Pkg}}/controller.go
-      #- templates/controller.tmpl:/tmp/$PKG/controller.go
+      - templates/service.tmpl:/tmp/$PKG/service.go
     environment:
       #Pkg: $PKG
       Controller: '{{ pascalcase .Pkg }}Controller'
       Entity: '{{ pascalcase .Pkg }}'
+      Service: '{{ pascalcase "$PKG" }}Service'
       #Controller: '{{ pascalcase "$PKG" }}Controller'
       #Entity: '{{ pascalcase "$PKG" }}'
       #PascalCaseSingular: PartyRelationship

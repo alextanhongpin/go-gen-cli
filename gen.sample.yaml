@@ -4,14 +4,16 @@ templates:
     description: test template
     prompts:
       - name: Pkg
-        message: What is your name?
+        message: Enter package name
         type: input
         required: true
     volumes:
       - templates/controller.tmpl:/tmp/{{.Pkg}}/controller.go
+      - templates/service.tmpl:/tmp/$PKG/service.go
     environment:
       Controller: '{{ pascalcase .Pkg }}Controller'
       Entity: '{{ pascalcase .Pkg }}'
+      Service: '{{ pascalcase "$PKG" }}Service'
       #PascalCaseSingular: PartyRelationship
       #PascalCasePlural: PartyRelationships
       #CamelCaseSingular: partyRelationship
