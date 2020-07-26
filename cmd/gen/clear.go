@@ -26,9 +26,13 @@ var clearCmd = &cli.Command{
 		}
 
 		merr := gen.NewMultiError()
-		for _, a := range tpl.Actions {
-			if !merr.Add(g.Remove(a.Template)) {
-				fmt.Printf("%s: file removed\n", a.Template)
+		for _, vol := range tpl.Volumes {
+			_, dst, err := vol.Split()
+			if merr.Add(err) {
+				continue
+			}
+			if !merr.Add(g.Remove(dst)) {
+				fmt.Printf("%s: file removed\n", dst)
 			}
 		}
 		return merr

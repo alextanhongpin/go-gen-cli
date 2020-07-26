@@ -24,7 +24,6 @@ var initCmd = &cli.Command{
 
 		name := "hello"
 		cfg := gen.NewConfig()
-		cfg.Add(gen.NewTemplate(name))
 
 		merr := gen.NewMultiError()
 
@@ -33,9 +32,14 @@ var initCmd = &cli.Command{
 		}
 
 		tpl := cfg.Find(name)
-		for _, a := range tpl.Actions {
-			if !merr.Add(g.Touch(a.Template)) {
-				fmt.Printf("%s: template created\n", a.Template)
+		for _, vol := range tpl.Volumes {
+			src, _, err := vol.Split()
+			if merr.Add(err) {
+				continue
+			}
+
+			if !merr.Add(g.Touch(src)) {
+				fmt.Printf("%s: template created\n", src)
 			}
 		}
 

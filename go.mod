@@ -12,7 +12,7 @@ require (
 	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mitchellh/copystructure v1.0.0 // indirect
-	github.com/stretchr/testify v1.5.1 // indirect
+	github.com/stretchr/testify v1.5.1
 	github.com/tj/survey v2.0.6+incompatible
 	github.com/urfave/cli/v2 v2.2.0
 	golang.org/x/tools v0.0.0-20200522201501-cb1345f3a375

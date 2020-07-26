@@ -9,11 +9,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-type Data struct {
-	Prompt map[string]interface{}
-	Env    map[string]string
-}
-
 func main() {
 	var version string
 	b, err := ioutil.ReadFile("VERSION")
@@ -41,10 +36,7 @@ func main() {
 		Flags:   flags,
 		Commands: []*cli.Command{
 			initCmd,
-			addCmd,
-			removeCmd,
 			generateCmd,
-			lsCmd,
 			clearCmd,
 		},
 	}

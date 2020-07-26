@@ -13,7 +13,7 @@ type Template struct {
 	Name        string            `yaml:"name,omitempty"`
 	Description string            `yaml:"description,omitempty"`
 	Prompts     []*Prompt         `yaml:"prompts,omitempty"`
-	Actions     []*Action         `yaml:"actions,omitempty"`
+	Volumes     []Volume          `yaml:"volumes,omitempty"`
 	Environment map[string]string `yaml:"environment,omitempty"`
 }
 
@@ -22,19 +22,15 @@ func NewTemplate(name string) *Template {
 		Name:        name,
 		Description: fmt.Sprintf("%s template", name),
 		Prompts:     make([]*Prompt, 0),
-		Actions: []*Action{
-			NewAction(name),
-			NewAction(fmt.Sprintf("%s_test", name)),
-		},
-		Environment: map[string]string{
-			"PKG": "$PKG",
-		},
+		Volumes:     make([]Volume, 0),
+		Environment: make(map[string]string, 0),
 	}
 }
 
 func (t *Template) ParseEnvironment() []error {
 	var errors []error
 	for key, value := range t.Environment {
+		fmt.Println(key, value)
 		if value == "" {
 			errors = append(errors, fmt.Errorf("env %s is specified but no value is provided", key))
 		} else {
@@ -49,7 +45,12 @@ func (t *Template) ParsePrompts() (map[string]interface{}, error) {
 }
 
 func ParseTemplate(b []byte, data interface{}) ([]byte, error) {
-	t := template.Must(template.New("").Funcs(sprig.FuncMap()).Parse(string(b)))
+	t := template.Must(template.New("").
+		Funcs(sprig.FuncMap()).
+		Funcs(template.FuncMap{
+			"pascalcase": PascalCase,
+			"camelcase":  CamelCase,
+		}).Parse(string(b)))
 
 	var bb bytes.Buffer
 	if err := t.Execute(&bb, data); err != nil {
@@ -57,4 +58,20 @@ func ParseTemplate(b []byte, data interface{}) ([]byte, error) {
 	}
 
 	return bb.Bytes(), nil
+}
+
+func ParseString(s string, data interface{}) (string, error) {
+	t := template.Must(template.New("").
+		Funcs(sprig.FuncMap()).
+		Funcs(template.FuncMap{
+			"pascalcase": PascalCase,
+			"camelcase":  CamelCase,
+		}).Parse(s))
+
+	var bb bytes.Buffer
+	if err := t.Execute(&bb, data); err != nil {
+		return "", err
+	}
+
+	return bb.String(), nil
 }

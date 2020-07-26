@@ -1,9 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
-	"os"
 	"path"
 
 	"github.com/alextanhongpin/go-gen-cli"
@@ -31,6 +31,9 @@ var generateCmd = &cli.Command{
 		}
 
 		name := c.Args().First()
+		if name == "" {
+			return errors.New("name is required: gen generate <name>")
+		}
 		tpl := cfg.Find(name)
 		if tpl == nil {
 			return fmt.Errorf("%s: not found", name)
@@ -48,9 +51,12 @@ var generateCmd = &cli.Command{
 			return err
 		}
 
-		data := Data{
-			Prompt: answers,
-			Env:    tpl.Environment,
+		for key, val := range tpl.Environment {
+			val, err := gen.ParseString(val, answers)
+			if err != nil {
+				return err
+			}
+			answers[key] = val
 		}
 
 		isGoFile := func(name string) bool {
@@ -91,7 +97,7 @@ var generateCmd = &cli.Command{
 				if len(b) == 0 {
 					return nil, fmt.Errorf("%s: file empty", in)
 				}
-				b, err = gen.ParseTemplate(b, data)
+				b, err = gen.ParseTemplate(b, answers)
 				if err != nil {
 					return nil, err
 				}
@@ -109,11 +115,17 @@ var generateCmd = &cli.Command{
 		}
 
 		merr := gen.NewMultiError()
-		for _, act := range tpl.Actions {
-			in := os.ExpandEnv(act.Template)
-			out := os.ExpandEnv(act.Path)
-			if added := merr.Add(copyTo(in, out)); !added {
-				fmt.Printf("%s: file created\n", out)
+		for _, vol := range tpl.Volumes {
+			src, dst, err := vol.Split()
+			if err != nil {
+				return err
+			}
+			dst, err = gen.ParseString(dst, answers)
+			if merr.Add(err) {
+				continue
+			}
+			if added := merr.Add(copyTo(src, dst)); !added {
+				fmt.Printf("%s: file created\n", dst)
 			}
 		}
 		return merr
