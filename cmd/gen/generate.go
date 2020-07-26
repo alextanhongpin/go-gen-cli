@@ -81,6 +81,7 @@ var generateCmd = &cli.Command{
 
 			w, err := g.WriteOnlyFile(out)
 			if err != nil {
+				g.Remove(out)
 				return err
 			}
 
@@ -105,6 +106,7 @@ var generateCmd = &cli.Command{
 				if isGoFile(out) {
 					b, err = gen.FormatSource(b)
 					if err != nil {
+						_ = g.Remove(out)
 						return nil, err
 					}
 				}
@@ -128,6 +130,9 @@ var generateCmd = &cli.Command{
 				fmt.Printf("%s: file created\n", dst)
 			}
 		}
-		return merr
+		if merr.HasError() {
+			return merr
+		}
+		return nil
 	},
 }

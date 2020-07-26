@@ -47,6 +47,9 @@ var initCmd = &cli.Command{
 			fmt.Printf("%s: config written\n", c.String("file"))
 		}
 
-		return merr
+		if merr.HasError() {
+			return merr
+		}
+		return nil
 	},
 }

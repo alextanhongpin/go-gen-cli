@@ -28,3 +28,7 @@ func (m *MultiError) Error() string {
 func (m *MultiError) Errors() []error {
 	return m.errors
 }
+
+func (m *MultiError) HasError() bool {
+	return len(m.errors) > 0
+}

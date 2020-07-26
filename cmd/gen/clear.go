@@ -35,6 +35,9 @@ var clearCmd = &cli.Command{
 				fmt.Printf("%s: file removed\n", dst)
 			}
 		}
-		return merr
+		if merr.HasError() {
+			return merr
+		}
+		return nil
 	},
 }
