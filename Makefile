@@ -2,7 +2,7 @@ VERSION := $(shell git describe --tags --abbrev=0)
 
 tag:
 	@echo $(VERSION)
-	#@echo $(shell git describe --tags --abbrev=0) > VERSION
+	@echo $(shell git describe --tags --abbrev=0) > VERSION
 
 test:
 	@go test -v ./...
