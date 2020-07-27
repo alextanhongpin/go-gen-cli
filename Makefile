@@ -16,3 +16,6 @@ clear:
 
 dry-run:
 	PKG=user go run cmd/gen/**.go generate --dry-run -t domain user_booking
+
+init:
+	go run cmd/gen/**.go init
