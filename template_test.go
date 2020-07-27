@@ -25,6 +25,7 @@ func TestParseTemplate(t *testing.T) {
 		{"John Doe", "john_doe", "johnDoe", "john-doe", "JohnDoe"},
 		{"party-relationship", "party_relationship", "partyRelationship", "party-relationship", "PartyRelationship"},
 		{"party-100", "party_100", "party100", "party-100", "Party100"},
+		{"user_service", "user_service", "userService", "user-service", "UserService"},
 	}
 	for _, tt := range tests {
 		tpl := []byte(`{{ snakecase .Name }} {{ camelcase .Name }} {{ kebabcase .Name }} {{ pascalcase .Name }}`)
