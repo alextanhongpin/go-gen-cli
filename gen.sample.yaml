@@ -3,10 +3,11 @@ templates:
   - name: domain
     description: test template
     prompts:
-      - name: Pkg
-        message: Enter package name
+      - name: Name
+        message: Enter your name
         type: input
         required: true
+      # .Pkg is the first argument provided when calling the generate cli.
     volumes:
       - templates/controller.tmpl:/tmp/{{.Pkg}}/controller.go
       - templates/service.tmpl:/tmp/$PKG/service.go

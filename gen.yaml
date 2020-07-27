@@ -3,9 +3,9 @@ templates:
   - name: domain
     description: test template
     prompts:
-      - name: Pkg
-        message: Enter package name
-        type: input
+      - name: Continue
+        message: Continue with step?
+        type: confirm
         required: true
     volumes:
       - templates/controller.tmpl:/tmp/{{.Pkg}}/controller.go
