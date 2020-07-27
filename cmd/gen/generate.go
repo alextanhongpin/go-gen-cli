@@ -20,6 +20,12 @@ var generateCmd = &cli.Command{
 			Name:  "dry-run",
 			Usage: "prints to stdout if true",
 		},
+		&cli.StringFlag{
+			Name:     "template",
+			Aliases:  []string{"t"},
+			Usage:    "use the given template",
+			Required: true,
+		},
 	},
 	Action: func(c *cli.Context) error {
 		g := gen.New(c.String("file"))
@@ -30,7 +36,8 @@ var generateCmd = &cli.Command{
 			return err
 		}
 
-		name := c.Args().First()
+		pkg := c.Args().First()
+		name := c.String("template")
 		if name == "" {
 			return errors.New("name is required: gen generate <name>")
 		}
@@ -50,6 +57,8 @@ var generateCmd = &cli.Command{
 		if err != nil {
 			return err
 		}
+
+		answers["Pkg"] = pkg
 
 		for key, val := range tpl.Environment {
 			val, err := gen.ParseString(val, answers)
