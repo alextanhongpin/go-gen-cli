@@ -45,7 +45,7 @@ func main() {
 	sort.Sort(cli.CommandsByName(app.Commands))
 
 	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 }

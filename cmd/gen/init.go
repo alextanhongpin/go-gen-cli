@@ -22,7 +22,6 @@ var initCmd = &cli.Command{
 		g := gen.New(c.String("file"))
 		g.SetDryRun(c.Bool("dry-run"))
 
-		name := "hello"
 		cfg := gen.NewConfig()
 
 		merr := gen.NewMultiError()
@@ -31,7 +30,22 @@ var initCmd = &cli.Command{
 			return err
 		}
 
-		tpl := cfg.Find(name)
+		cfg.Version = "0.1"
+		cfg.Templates = append(cfg.Templates, &gen.Template{
+			Name:    "domain",
+			Volumes: []gen.Volume{"templates/controller.tmpl:/tmp/{{.Pkg}}/controller.go"},
+			Environment: map[string]string{
+				"Controller":        `{{ pascalcase .Pkg }}Controller`,
+				"Entity":            `{{ pascalcase .Pkg }}`,
+				"Service":           `{{ pascalcase "$PKG" }}Service`,
+				"CamelCaseSingular": `{{ camelcase .Pkg }}`,
+				"CamelCasePlural":   `{{ camelcase .Pkg }}s`,
+				"SnakeCaseSingular": `{{ snakecase .Pkg }}`,
+				"SnakeCasePlural":   `{{ snakecase .Pkg }}s`,
+			},
+		})
+
+		tpl := cfg.Find("domain")
 		for _, vol := range tpl.Volumes {
 			src, _, err := vol.Split()
 			if merr.Add(err) {
