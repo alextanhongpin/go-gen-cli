@@ -8,8 +8,8 @@ import (
 var camelCaseRe, pascalCaseRe *regexp.Regexp
 
 func init() {
-	camelCaseRe = regexp.MustCompile(`(?i)[^a-z]+[a-z]`)
-	pascalCaseRe = regexp.MustCompile(`(?i)(^[a-z]|[^a-z]+[a-z])`)
+	camelCaseRe = regexp.MustCompile(`(?i)[\W]+[\w]`)
+	pascalCaseRe = regexp.MustCompile(`(?i)(^[\w]|[\W]+[\w])`)
 }
 
 func min(i, j int) int {
