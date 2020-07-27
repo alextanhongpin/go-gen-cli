@@ -5,11 +5,10 @@ import (
 	"strings"
 )
 
-var camelCaseRe, pascalCaseRe *regexp.Regexp
+var re *regexp.Regexp
 
 func init() {
-	camelCaseRe = regexp.MustCompile(`(?i)[\W]+[\w]`)
-	pascalCaseRe = regexp.MustCompile(`(?i)(^[\w]|[\W]+[\w])`)
+	re = regexp.MustCompile(`(?i)(^[a-z]|[^a-z0-9]+[a-z0-9])`)
 }
 
 func min(i, j int) int {
@@ -20,15 +19,14 @@ func min(i, j int) int {
 }
 
 func CamelCase(str string) string {
+	str = PascalCase(str)
 	i := min(1, len(str))
 	str = strings.ToLower(str[:i]) + str[i:]
-	return camelCaseRe.ReplaceAllStringFunc(str, func(s string) string {
-		return strings.ToUpper(s[len(s)-1:])
-	})
+	return str
 }
 
 func PascalCase(str string) string {
-	return pascalCaseRe.ReplaceAllStringFunc(str, func(s string) string {
+	return re.ReplaceAllStringFunc(str, func(s string) string {
 		return strings.ToUpper(s[len(s)-1:])
 	})
 }
