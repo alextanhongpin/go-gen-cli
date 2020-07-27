@@ -1,27 +1,13 @@
 version: "0.1"
 templates:
-  - name: domain
-    description: test template
-    prompts:
-      - name: Continue
-        message: Continue with step?
-        type: confirm
-        required: true
-    volumes:
-      - templates/controller.tmpl:/tmp/{{.Pkg}}/controller.go
-      - templates/service.tmpl:/tmp/$PKG/service.go
-    environment:
-      #Pkg: $PKG
-      Controller: '{{ pascalcase .Pkg }}Controller'
-      Entity: '{{ pascalcase .Pkg }}'
-      Service: '{{ pascalcase "$PKG" }}Service'
-      #Controller: '{{ pascalcase "$PKG" }}Controller'
-      #Entity: '{{ pascalcase "$PKG" }}'
-      #PascalCaseSingular: PartyRelationship
-      #PascalCasePlural: PartyRelationships
-      #CamelCaseSingular: partyRelationship
-      #CamelCasePlural: partyRelationships
-      #SnakeCaseSingular: party_relationship
-      #SnakeCasePlural: party_relationships
-      #KebabCaseSingular: party-relationship
-      #KebabCasePlural: party-relationships
+- name: domain
+  volumes:
+  - templates/controller.tmpl:/tmp/{{.Pkg}}/controller.go
+  environment:
+    CamelCasePlural: '{{ camelcase .Pkg }}s'
+    CamelCaseSingular: '{{ camelcase .Pkg }}'
+    Controller: '{{ pascalcase .Pkg }}Controller'
+    Entity: '{{ pascalcase .Pkg }}'
+    Service: '{{ pascalcase "$PKG" }}Service'
+    SnakeCasePlural: '{{ snakecase .Pkg }}s'
+    SnakeCaseSingular: '{{ snakecase .Pkg }}'
