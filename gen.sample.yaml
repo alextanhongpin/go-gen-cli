@@ -1,25 +1,20 @@
 version: "0.1"
 templates:
-  - name: domain
-    description: test template
-    prompts:
-      - name: Name
-        message: Enter your name
-        type: input
-        required: true
-      # .Pkg is the first argument provided when calling the generate cli.
-    volumes:
-      - templates/controller.tmpl:/tmp/{{.Pkg}}/controller.go
-      - templates/service.tmpl:/tmp/$PKG/service.go
-    environment:
-      Controller: '{{ pascalcase .Pkg }}Controller'
-      Entity: '{{ pascalcase .Pkg }}'
-      Service: '{{ pascalcase "$PKG" }}Service'
-      #PascalCaseSingular: PartyRelationship
-      #PascalCasePlural: PartyRelationships
-      #CamelCaseSingular: partyRelationship
-      #CamelCasePlural: partyRelationships
-      #SnakeCaseSingular: party_relationship
-      #SnakeCasePlural: party_relationships
-      #KebabCaseSingular: party-relationship
-      #KebabCasePlural: party-relationships
+- name: domain
+  action:
+    - path: templates/controller.tmpl:/tmp/{{.Pkg}}/controller.go
+      variables:
+        CamelCase: '{{ camelcase .Pkg }}'
+        #PascalCaseSingular: PartyRelationship
+        #PascalCasePlural: PartyRelationships
+        #CamelCaseSingular: partyRelationship
+        #CamelCasePlural: partyRelationships
+        #SnakeCaseSingular: party_relationship
+        #SnakeCasePlural: party_relationships
+        #KebabCaseSingular: party-relationship
+        #KebabCasePlural: party-relationships
+    - path: templates/service.tmpl:/tmp/{{.Pkg}}/service.go
+      variables:
+        ServiceStruct: '{{ camelcase .Pkg }}Service'
+  environment:
+    Name: '$NAME'

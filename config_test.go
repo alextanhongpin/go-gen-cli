@@ -13,6 +13,7 @@ func TestConfig(t *testing.T) {
 	cfg := gen.NewConfig()
 	assert.NotNil(cfg)
 	assert.True(len(cfg.Templates) == 0)
+	assert.Equal("0.0.1", cfg.Version)
 }
 
 func TestConfigFind(t *testing.T) {

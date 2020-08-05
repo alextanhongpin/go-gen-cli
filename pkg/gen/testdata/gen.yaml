@@ -11,6 +11,6 @@ templates:
       CamelCaseSingular: '{{ camelcase .Pkg }}'
       Controller: '{{ pascalcase .Pkg }}Controller'
       Entity: '{{ pascalcase .Pkg }}'
-      Service: '{{ pascalcase "$GREETING" }}Service'
+      Service: '{{ pascalcase "$PKG" }}Service'
       SnakeCasePlural: '{{ snakecase .Pkg }}s'
       SnakeCaseSingular: '{{ snakecase .Pkg }}'

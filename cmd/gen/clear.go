@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/alextanhongpin/go-gen-cli"
@@ -21,39 +22,44 @@ var clearCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		g := gen.New(c.String("file"))
-		cfg, err := g.LoadConfig()
-		if err != nil {
-			return err
-		}
-
-		name := c.String("template")
-		tpl := cfg.Find(name)
-		if tpl == nil {
-			return fmt.Errorf("%s: not found", name)
-		}
-		data := make(map[string]string, 0)
-		data["Pkg"] = c.Args().First()
-
-		merr := gen.NewMultiError()
-		for _, vol := range tpl.Volumes {
-			_, dst, err := vol.Split()
-			if merr.Add(err) {
-				continue
-			}
-
-			dst, err = gen.ParseString(dst, data)
-
-			if merr.Add(err) {
-				continue
-			}
-			if !merr.Add(g.Remove(dst)) {
-				fmt.Printf("%s: file removed\n", dst)
-			}
-		}
-		if merr.HasError() {
-			return merr
-		}
-		return nil
+		configPath := c.String("file")
+		templateName := c.String("template")
+		packageName := c.Args().First()
+		return Clear(configPath, templateName, packageName)
 	},
+}
+
+func Clear(configPath, templateName, packageName string) error {
+	g := gen.New(configPath)
+	cfg, err := g.LoadConfig()
+	if err != nil {
+		return err
+	}
+	tpl := cfg.Find(templateName)
+	if tpl == nil {
+		return fmt.Errorf("%s: not found", templateName)
+	}
+	data := make(map[string]interface{}, 0)
+	data["Pkg"] = packageName
+
+	merr := gen.NewMultiError()
+	for _, act := range tpl.Actions {
+		newAct, err := act.Resolve(data)
+		if merr.Add(err) {
+			continue
+		}
+
+		dst := newAct.Destination()
+		if dst == "" && merr.Add(errors.New("destination is empty")) {
+			continue
+		}
+
+		if !merr.Add(g.Remove(dst)) {
+			fmt.Printf("%s: file removed\n", dst)
+		}
+	}
+	if merr.HasError() {
+		return merr
+	}
+	return nil
 }

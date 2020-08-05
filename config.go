@@ -7,6 +7,7 @@ type Config struct {
 
 func NewConfig() *Config {
 	return &Config{
+		Version:   "0.0.1",
 		Templates: make([]*Template, 0),
 	}
 }

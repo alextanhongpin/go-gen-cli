@@ -1,5 +1,8 @@
 VERSION := $(shell git describe --tags --abbrev=0)
 
+GREETING := helloworld
+gen_opts := -t my_action user_booking
+
 tag:
 	@echo $(VERSION)
 	@echo $(shell git describe --tags --abbrev=0) > VERSION
@@ -8,14 +11,14 @@ test:
 	@go test -v ./...
 
 gen:
-	PKG=user go run cmd/gen/**.go generate -t domain user_booking
+	GREETING=${GREETING} go run cmd/gen/**.go generate ${gen_opts}
 
 clear:
-	PKG=user go run cmd/gen/**.go clear -t domain user_booking
+	go run cmd/gen/**.go clear ${gen_opts}
 
 
 dry-run:
-	PKG=user go run cmd/gen/**.go generate --dry-run -t domain user_booking
+	GREETING=${GREETING} go run cmd/gen/**.go generate --dry-run ${gen_opts}
 
 init:
 	go run cmd/gen/**.go init
