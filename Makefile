@@ -22,3 +22,6 @@ dry-run:
 
 init:
 	go run cmd/gen/**.go init
+
+install:
+	go get github.com/alextanhongpin/go-gen-cli
